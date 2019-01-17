@@ -4,17 +4,10 @@
 
 import datetime
 import subprocess
-from xml.dom import minidom
 import smtplib
+from xml.dom import minidom
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEText import MIMEText
- 
-fromaddr = "SENDER_ADDRESS_HERE"
-toaddr = "RECEIVER_ADDRESS_HERE"
-msg = MIMEMultipart()
-msg['From'] = fromaddr
-msg['To'] = toaddr
-msg['Subject'] = "network_scan_" + timeNow + ".log"
 
 timeNow = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
 subprocess.check_call("sudo nohup nmap -sP -sn -oX network_scan_" + timeNow + ".log 192.168.0.*", shell=True)
@@ -25,9 +18,16 @@ nmap = doc.getElementsByTagName('nmaprun')
 nmap_time = int(nmap[0].attributes['start'].value)
 date = datetime.datetime.fromtimestamp(nmap_time)
 dataList = []
+ 
+fromaddr = "SENDER_ADDRESS_HERE"
+toaddr = "RECEIVER_ADDRESS_HERE"
+msg = MIMEMultipart()
+msg['From'] = fromaddr
+msg['To'] = toaddr
+msg['Subject'] = "network_scan_" + timeNow + ".log"
 
 dataList.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
-print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')	
+print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 
 def func():
     for i, v in enumerate(data):
@@ -64,6 +64,7 @@ def func():
         print('Name: ' + NAME_get)
 
         dataList.append('\n')
+        print('\n')
 
     body = '\n'.join(dataList)
     msg.attach(MIMEText(body, 'plain'))
