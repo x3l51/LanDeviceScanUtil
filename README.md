@@ -28,4 +28,4 @@ Vendor: n/a
 Name: server.gateway
 ```
 
-For the script with email you have to enter your credentials on line 12, 13, 71 and 73.
+For the script with email you have to enter your credentials on line 22, 23, 72 and 74.
