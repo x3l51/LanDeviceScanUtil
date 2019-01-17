@@ -6,8 +6,9 @@ import datetime
 import subprocess
 from xml.dom import minidom
 
-subprocess.check_call("sudo nohup nmap -sP -sn -oX network_scan_" + str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')) + ".log 192.168.0.*", shell=True)
-doc = minidom.parse('network_scan.log')
+timeNow = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
+subprocess.check_call("sudo nohup nmap -sP -sn -oX network_scan_" + timeNow + ".log 192.168.0.*", shell=True)
+doc = minidom.parse('network_scan_' + timeNow + '.log')
 data = doc.getElementsByTagName('host')
 
 nmap = doc.getElementsByTagName('nmaprun')
