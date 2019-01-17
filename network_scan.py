@@ -7,7 +7,7 @@ import subprocess
 from xml.dom import minidom
 
 timeNow = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
-subprocess.check_call("sudo nmap -sP -sn -oX network_scan_" + timeNow + ".log 192.168.0.* command > /dev/null 2>&1", shell=True)
+subprocess.check_call("sudo nmap -sP -sn -oX network_scan_" + timeNow + ".log 192.168.0.* > /dev/null 2>&1", shell=True)
 doc = minidom.parse('network_scan_' + timeNow + '.log')
 data = doc.getElementsByTagName('host')
 
