@@ -27,3 +27,5 @@ MAC: n/a
 Vendor: n/a
 Name: server.gateway
 ```
+
+For the script with email you have to enter your credentials on line 12, 13, 71 and 73.
