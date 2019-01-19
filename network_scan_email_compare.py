@@ -50,7 +50,6 @@ def func():
     for i, v in enumerate(data):
         items = v.getElementsByTagName('address')
         itemsTwo = v.getElementsByTagName('hostname')
-        itemsThree = v.getElementsByTagName('hostname')
 
         try:
             IP_get = items[0].attributes['addr'].value
@@ -58,6 +57,13 @@ def func():
             IP_get = ('n/a')
         dataList.append('IP: ' + IP_get)
         print('IP: ' + IP_get)
+
+        try:
+            NAME_get = itemsTwo[0].attributes['name'].value
+        except:
+            NAME_get = ('n/a')
+        dataList.append('Name: ' + NAME_get)
+        print('Name: ' + NAME_get)
 
         try:
             MAC_get = items[1].attributes['addr'].value
@@ -73,17 +79,13 @@ def func():
         dataList.append('Vendor: ' + VENDOR_get)
         print('Vendor: ' + VENDOR_get)
 
-        try:
-            NAME_get = itemsTwo[0].attributes['name'].value
-        except:
-            NAME_get = ('n/a')
-        dataList.append('Name: ' + NAME_get)
-        print('Name: ' + NAME_get)
-
         DEVICE = {'IP': IP_get,'MAC': MAC_get,'VENDOR': VENDOR_get,'NAME': NAME_get,'SEEN': timeNow, 'FIRST_SEEN': timeNow}
 
         with open('network_scan_all.json') as json_file:
             data_all = json.load(json_file)
+            LAST_SEEN_get = (data_all[MAC_get]["FIRST_SEEN"])
+            dataList.append('First seen: ' + LAST_SEEN_get)
+            print('First seen: ' + LAST_SEEN_get)
         
         if MAC_get in data_all:
             print('Status: Known Device.')
@@ -108,6 +110,7 @@ def func():
 
     if 'Unknown device.' in dataList:
         sendMail()
+        return
     else:
         return
 
