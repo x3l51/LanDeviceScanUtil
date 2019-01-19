@@ -6,6 +6,7 @@ import datetime
 import subprocess
 import smtplib
 import email
+import requests
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
@@ -19,10 +20,14 @@ data = doc.getElementsByTagName('host')
 nmap = doc.getElementsByTagName('nmaprun')
 nmap_time = int(nmap[0].attributes['start'].value)
 date = datetime.datetime.fromtimestamp(nmap_time)
+public_ip = requests.get('http://ip.42.pl/raw').text
 dataList = []
 
 dataList.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
+
+dataList.append('Public IP: ' + public_ip + '\n')
+print('Public IP: ' + public_ip + '\n')
 
 def func():
     for i, v in enumerate(data):
