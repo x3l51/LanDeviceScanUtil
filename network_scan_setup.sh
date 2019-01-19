@@ -4,4 +4,7 @@ cd LanDeviceScanUtil-master/
 sudo chmod +x network_scan.py
 sudo chmod +x network_scan_email.py
 sudo chmod +x network_scan_email_compare.py
-sudo crontab -l | { cat; echo "* * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py"; } | crontab -
+sudo crontab -l > mycron
+sudo echo "* * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py" >> mycron
+sudo crontab mycron
+sudo rm mycron
