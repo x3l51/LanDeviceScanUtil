@@ -56,3 +56,22 @@ Status: Unknown device.
 
 Email got sent.
 ```
+
+
+If you want to have an email sent everytime an unknown device is being discovered in the network, do the following:
+
+Run the script as a cronjob every minute. To do so, download the script with:
+
+    `sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_email_compare.py`
+    
+Then type:
+
+    `sudo chmod +x network_scan_email_compare.py && sudo chmod 777 networ_scan_email_compare.py`
+    
+Then type:
+
+    `sudo crontab -e`
+    
+Append this at the end of the file:
+
+    `* * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py`
