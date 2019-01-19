@@ -1,9 +1,6 @@
 # LanDeviceScanUtil
 Scans the local network for devices in IP range 192.168.0.*
 
-If you want to scan another IP range, modify the script on line 9
-
-
 ```
 --@server:/testing $ sudo python3 network_scan.py
 
