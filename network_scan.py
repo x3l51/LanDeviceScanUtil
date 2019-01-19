@@ -14,6 +14,9 @@ data = doc.getElementsByTagName('host')
 nmap = doc.getElementsByTagName('nmaprun')
 nmap_time = int(nmap[0].attributes['start'].value)
 date = datetime.datetime.fromtimestamp(nmap_time)
+dataList = []
+
+dataList.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 
 def func():
@@ -26,25 +29,34 @@ def func():
             IP_get = items[0].attributes['addr'].value
         except:
             IP_get = ('n/a')
+        dataList.append('IP: ' + IP_get)
         print('IP: ' + IP_get)
 
         try:
             MAC_get = items[1].attributes['addr'].value
         except:
             MAC_get = ('n/a')
+        dataList.append('MAC: ' + MAC_get)
         print('MAC: ' + MAC_get)
 
         try:
             VENDOR_get = items[1].attributes['vendor'].value
         except:
             VENDOR_get = ('n/a')
+        dataList.append('Vendor: ' + VENDOR_get)
         print('Vendor: ' + VENDOR_get)
 
         try:
             NAME_get = itemsTwo[0].attributes['name'].value
         except:
             NAME_get = ('n/a')
+        dataList.append('Name: ' + NAME_get)
         print('Name: ' + NAME_get)
 
+        dataList.append('\n')
         print('\n')
+
+    with open('network_scan_all.txt', 'w') as readable:
+        for item in dataList:
+            readable.write("%s\n" % item)
 func()
