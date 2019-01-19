@@ -5,22 +5,21 @@
 import datetime
 import subprocess
 import smtplib
+import mimetypes
 import email
 import requests
 import os
 import sys
+from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
 import json
 from xml.dom import minidom
 
-doc = minidom.parse('network_scan.log')
-data = doc.getElementsByTagName('host')
-
-nmap = doc.getElementsByTagName('nmaprun')
-nmap_time = int(nmap[0].attributes['start'].value)
-date = datetime.datetime.fromtimestamp(nmap_time)
+date = datetime.datetime.now()
 timeNow = str(date.strftime('%Y-%m-%d_%H:%M:%S'))
+
 dataList = []
 dataListNew = []
 
@@ -33,7 +32,7 @@ try:
     hostname = "ip.42.pl"
     response = os.system("ping -c 1 " + hostname + " > /dev/null 2>&1")
     if response == 0:
-        subprocess.check_call("sudo nmap -sP -sn -oX network_scan.log 192.168.0.* > /dev/null 2>&1", shell=True)
+        subprocess.check_call("sudo nmap -sP -sn -oX network_scan_online.log 192.168.0.* > /dev/null 2>&1", shell=True)
         dataList.append('Public IP: ' + public_ip + '\n')
         dataListNew.append('Public IP: ' + public_ip + '\n')
         print('Public IP: ' + public_ip + '\n')
@@ -46,10 +45,13 @@ except:
     dataListNew.append('NO INTERNET CONNECTIVITY\n')
     print('NO INTERNET CONNECTIVITY\n')
 
-    with open('network_scan_all.txt', 'w') as readable:
+    with open('network_scan_online.txt', 'w') as readable:
         for item in dataList:
             readable.write("%s\n" % item)
-        sys.exit()
+        sys.exit()     
+
+doc = minidom.parse('network_scan_online.log')
+data = doc.getElementsByTagName('host')
 
 def func():
     for i, v in enumerate(data):
@@ -111,40 +113,84 @@ def func():
             dataListNew.append('Status: Unknown device.')
             FIRST_SEEN_get = timeNow
             dataListNew.append('First seen: ' + FIRST_SEEN_get)
+            print('First seen: ' + FIRST_SEEN_get)
             dataListNew.append('\n')
             dataList.append('\n')
+            print('\n')
             data_all[MAC_get] = DEVICE
             with open('network_scan_all.json', 'w') as outfile:
                 json.dump(data_all, outfile)
 
 
-    with open('network_scan_all.txt', 'w') as readable:
+    with open('network_scan_online.txt', 'w') as readable:
         for item in dataList:
             readable.write("%s\n" % item)
+
+    generateListAll()
 
     if 'Status: Unknown device.' in dataList:
         sendMail()
     else:
         return
 
+def generateListAll():
+    dataListAll = []
+    dataListAll.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
+    dataListAll.append('Public IP: ' + public_ip + '\n')
+    with open('network_scan_all.json') as json_file:
+        data_all = json.load(json_file)
+        for key in data_all.keys():
+            key_NAME = (data_all[key]["NAME"])
+            key_IP = (data_all[key]["IP"])
+            key_MAC = (data_all[key]["MAC"])
+            key_VENDOR = (data_all[key]["VENDOR"])
+            key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
+            key_LAST_SEEN = (data_all[key]["SEEN"])
+            dataListAll.append('Name: ' + key_NAME)
+            dataListAll.append('IP: ' + key_IP)
+            dataListAll.append('MAC: ' + key_MAC)
+            dataListAll.append('Vendor: ' + key_VENDOR)
+            dataListAll.append('First seen: ' + key_FIRST_SEEN)
+            dataListAll.append('Last seen: ' + key_LAST_SEEN)
+            dataListAll.append('\n')
+            
+    with open('network_scan_all.txt', 'w') as readableList:
+        for item in dataListAll:
+            readableList.write("%s\n" % item)
+
 def sendMail():
-    fromaddr = "SENDER_ADDRESS_HERE"
-    toaddr = "RECEIVER_ADDRESS_HERE"
+    emailfrom = "SENDER_HERE"
+    emailto = ["RECEIVER_HERE"]
+    fileToSend = "network_scan_all.txt"
 
     msg = MIMEMultipart()
-    msg['From'] = fromaddr
-    msg['To'] = toaddr
-    msg['Subject'] = "Unknown device detected - network_scan_" + timeNow + ".log"
+    msg["From"] = emailfrom
+    msg["To"] = ",".join(emailto)
+    msg["Subject"] = "Unknown device detected - network_scan_online_" + timeNow
+    msg.preamble = "Unknown device detected - network_scan_online_" + timeNow
+
+    ctype, encoding = mimetypes.guess_type(fileToSend)
+    if ctype is None or encoding is not None:
+        ctype = "application/octet-stream"
+
+    maintype, subtype = ctype.split("/", 1)
+
+    fp = open(fileToSend, "rb")
+    attachment = MIMEBase(maintype, subtype)
+    attachment.set_payload(fp.read())
+    fp.close()
+    encoders.encode_base64(attachment)
+    attachment.add_header("Content-Disposition", "attachment", filename=fileToSend)
     body = '\n'.join(dataListNew)
     msg.attach(MIMEText(body, 'plain'))
-    
+    msg.attach(attachment)
+
     server = smtplib.SMTP('SERVER_HERE', 587)
     server.starttls()
-    server.login(fromaddr, "PASSWORD_HERE")
-    text = msg.as_string()
-    server.sendmail(fromaddr, toaddr, text)
+    server.login(emailfrom, "PASSWORD_HERE")
+    server.sendmail(emailfrom, emailto, msg.as_string())
     server.quit()
-    print('\nEmail got sent.\n')
+    print('Email got sent.\n')
 
 func()
 
