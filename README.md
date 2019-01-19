@@ -1,6 +1,8 @@
 # LanDeviceScanUtil
 Scans the local network for devices in IP range 192.168.0.*
 
+You'll find a human readable output file named `network_scan_all.txt`
+
 ```
 --@server:/testing $ sudo python3 network_scan.py
 
