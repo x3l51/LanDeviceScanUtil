@@ -65,6 +65,8 @@ If you want to have an email sent everytime an unknown device is being discovere
 Run the script as a cronjob every minute. To do so, download the script with:
 
     `sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_email_compare.py`
+
+And modify the script to contain your credentials for sending emails.
     
 Then type:
 
