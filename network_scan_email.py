@@ -66,6 +66,10 @@ def func():
         dataList.append('\n')
         print('\n')
 
+    with open('network_scan_all.txt', 'w') as readable:
+        for item in dataList:
+            readable.write("%s\n" % item)
+
     body = '\n'.join(dataList)
     msg.attach(MIMEText(body, 'plain'))
     
