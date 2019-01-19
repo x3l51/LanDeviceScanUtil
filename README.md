@@ -86,4 +86,10 @@ You could also have all this automated with this commands:
 
     `sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_setup.sh && sudo bash network_scan_setup.sh`
 
-Ofc you still have to enter your credentials for sending email ins `network_scan_email.py` and `network_scan_email_compare.py`
+Ofc you still have to enter your credentials for sending email in
+
+    `network_scan_email.py`
+    
+and
+
+    `network_scan_email_compare.py`
