@@ -7,27 +7,44 @@ import subprocess
 import smtplib
 import email
 import requests
+import os
+import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import json
 from xml.dom import minidom
 
 timeNow = str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S'))
-subprocess.check_call("sudo nmap -sP -sn -oX network_scan.log 192.168.0.* > /dev/null 2>&1", shell=True)
 doc = minidom.parse('network_scan.log')
 data = doc.getElementsByTagName('host')
 
 nmap = doc.getElementsByTagName('nmaprun')
 nmap_time = int(nmap[0].attributes['start'].value)
 date = datetime.datetime.fromtimestamp(nmap_time)
-public_ip = requests.get('http://ip.42.pl/raw').text
 dataList = []
 
 dataList.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 
-dataList.append('Public IP: ' + public_ip + '\n')
-print('Public IP: ' + public_ip + '\n')
+try:
+    public_ip = requests.get('http://ip.42.pl/raw').text
+    hostname = "ip.42.pl"
+    response = os.system("ping -c 1 " + hostname + " > /dev/null 2>&1")
+    if response == 0:
+        subprocess.check_call("sudo nmap -sP -sn -oX network_scan.log 192.168.0.* > /dev/null 2>&1", shell=True)
+        dataList.append('Public IP: ' + public_ip + '\n')
+        print('Public IP: ' + public_ip + '\n')
+    else:
+        dataList.append('Public IP: n/a (Bad domain? (' + hostname + ')?\n')
+        print('Public IP: n/a (Bad domain? (' + hostname + ')?\n')
+except:
+    dataList.append('NO INTERNET CONNECTIVITY\n')
+    print('NO INTERNET CONNECTIVITY\n')
+
+    with open('network_scan_all.txt', 'w') as readable:
+        for item in dataList:
+            readable.write("%s\n" % item)
+        sys.exit()
 
 def func():
     for i, v in enumerate(data):
