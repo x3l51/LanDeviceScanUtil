@@ -102,7 +102,7 @@ def func():
             SEEN_val = {'SEEN': timeNow}
             data_all[MAC_get].update(SEEN_val)
             with open('network_scan_all.json', 'w') as outfile:
-                json.dump(data_all, outfile)
+                json.dump(data_all, outfile, sort_keys=True, indent=4)
         else:
             print('Status: Unknown device.')
             dataListNew.append('Name: ' + NAME_get)
@@ -119,7 +119,7 @@ def func():
             print('\n')
             data_all[MAC_get] = DEVICE
             with open('network_scan_all.json', 'w') as outfile:
-                json.dump(data_all, outfile)
+                json.dump(data_all, outfile, sort_keys=True, indent=4)
 
 
     with open('network_scan_online.txt', 'w') as readable:
