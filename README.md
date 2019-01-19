@@ -26,7 +26,7 @@ Name: server.gateway
 
 For the scripts with email you have to enter your credentials.
 
-The script `network_scan_email_compare.py` has list with all devices it has ever seen and does compare every new scan with if it has already seen the devices. If an unknown device is detected, the email is sent.
+The script `network_scan_email_compare.py` has a list with all devices it has ever seen. If an unknown device is detected, the email is sent.
 
 ```
 --@server:/testing $ sudo python3 network_scan_email_compare.py
