@@ -66,7 +66,7 @@ Run the script as a cronjob every minute. To do so, download the script with:
     
 Then type:
 
-    `sudo chmod +x network_scan_email_compare.py && sudo chmod 777 networ_scan_email_compare.py`
+    `sudo chmod +x network_scan_email_compare.py
     
 Then type:
 
