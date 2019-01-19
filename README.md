@@ -3,29 +3,6 @@ Scans the local network for devices in IP range 192.168.0.*
 
 You'll find a human readable output file named `network_scan_all.txt`
 
-```
---@server:/testing $ sudo python3 network_scan.py
-
-Time: 2019-01-17 13:34:17
-
-IP: 192.168.0.1
-MAC: 5C:49:79:8B:XX:XX
-Vendor: VendorName
-Name: gateway
-
-
-IP: 192.168.0.20
-MAC: 90:A7:83:87:XX:XX
-Vendor: VendorName
-Name: something.gateway
-
-
-IP: 192.168.0.74
-MAC: n/a
-Vendor: n/a
-Name: server.gateway
-```
-
 For the scripts with email you have to enter your credentials.
 
 The script `network_scan_email_compare.py` has a list with all devices it has ever seen. If an unknown device is detected, the email is sent.
@@ -85,11 +62,3 @@ Append this at the end of the file:
 You could also have all this automated with this commands:
 
     `sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_setup.sh && sudo bash network_scan_setup.sh`
-
-Ofc you still have to enter your credentials for sending email in
-
-    `network_scan_email.py`
-    
-and
-
-    `network_scan_email_compare.py`
