@@ -65,14 +65,14 @@ def func():
         
         if MAC_get in data_all:
             print('Status: Known Device.')
-            dataList.append('Known device.')
+            dataList.append('Status: Known device.')
             SEEN_val = {'SEEN': timeNow}
             data_all[MAC_get].update(SEEN_val)
             with open('network_scan_all.json', 'w') as outfile:
                 json.dump(data_all, outfile)
         else:
             print('Status: Unknown device.')
-            dataList.append('Unknown device.')
+            dataList.append('Status: Unknown device.')
             data_all[MAC_get] = DEVICE
             with open('network_scan_all.json', 'w') as outfile:
                 json.dump(data_all, outfile)
