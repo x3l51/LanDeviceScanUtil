@@ -175,10 +175,9 @@ def func():
         
         if MAC_get in data_all:
             if VENDOR_get == 'n/a':
-                stdoutdataMACDiffSec = MAC_get[:8].replace(":","-") # MAC LOCAL
-                VENDOR_read = subprocess.getoutput("grep -i \"" + stdoutdataMACDiffSec + "\" /var/lib/ieee-data/oui.txt | awk '{$1=$2=\"\"; print substr($0,2)}'") #getsVendor local
-                if not VENDOR_read:
-                    print("not none")
+                stdoutdataMACDiffSec = MAC_get[:8].replace(":","-")
+                VENDOR_read = subprocess.getoutput("grep -i \"" + stdoutdataMACDiffSec + "\" /var/lib/ieee-data/oui.txt | awk '{$1=$2=\"\"; print substr($0,2)}'")
+                if VENDOR_read:
                     VENDOR_get = VENDOR_read
                     VENDOR_val = {'VENDOR': VENDOR_get}
                     data_all[MAC_get].update(VENDOR_val)
@@ -198,11 +197,12 @@ def func():
             with open('network_scan_all.json', 'w') as outfile:
                 json.dump(data_all, outfile, sort_keys=True, indent=4)
         else:
-            print('Status: Unknown device.')
             dataListNew.append('Name: ' + NAME_get)
             dataListNew.append('IP: ' + IP_get)
             dataListNew.append('MAC: ' + MAC_get)
+            print('Vendor: ' + VENDOR_get)
             dataListNew.append('Vendor: ' + VENDOR_get)
+            print('Status: Unknown device.')
             dataList.append('Status: Unknown device.')
             dataListNew.append('Status: Unknown device.')
             FIRST_SEEN_get = timeNow
