@@ -1,18 +1,23 @@
 # LanDeviceScanUtil
 Scans the local network for devices in IP range 192.168.0.*
 
-You'll find a human readable output file named `network_scan_all.txt`
+You'll find a human readable output file named `network_scan_all.txt` and a html fine named `network_scan_all.html`, which you could `cp` via cron into your apache server
 
 For the scripts with email you have to enter your credentials.
 
-The script `network_scan_email_compare.py` has a list with all devices it has ever seen (`network_scan_all.json`, this one is human readable: `network_scan_all.txt`). If an unknown device is detected, an email is sent.
+The script `network_scan_email_compare.py` has a list with all devices it has ever seen (`network_scan_all.json`). If an unknown device is detected, an email is sent.
 
 ```
 --@server:/testing $ sudo python3 network_scan_email_compare.py
 
 Time: 2019-01-19 05:41:57
 
-Public IP: 89.215.12.81
+Public IP: 89.215.12.71
+
+Open ports:
+
+22/tcp  open  ssh
+443/tcp  open  https
 
 Name: gateway
 IP: 192.168.0.1
@@ -39,6 +44,10 @@ First seen: 2019-01-19_05:41:57
 
 
 Email got sent.
+
+Detailed info on node:
+
+# NMAP output of """nmap -F -A -oN""" here
 ```
 
 
@@ -58,12 +67,12 @@ Then type:
 
     `sudo crontab -e`
     
-Append this at the end of the file:
+Append this at the end of the file to have it run every minute:
 
     `* * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py`
     
 
 
-You could also have all this automated with this commands:
+You could also have all this automated with this commands: (you still have to put in your email creds tho)
 
     `sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_setup.sh && sudo bash network_scan_setup.sh`
