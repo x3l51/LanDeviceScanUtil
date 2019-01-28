@@ -9,3 +9,4 @@ crontab -l > mycron
 echo "* * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py" >> mycron
 crontab mycron
 rm mycron
+sudo python3 network_scan_email_compare.py
