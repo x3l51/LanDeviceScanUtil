@@ -9,14 +9,14 @@ The script `network_scan_email_compare.py` has a list with all devices it has ev
 
 
 
-Use:
+This will automatically use the full IP range, which your device is in:
 ```
 sudo python3 network_scan_email_compare.py
 ```
-This will automatically use the full IP range, which your device is in.
 
 
 
+This let's you enter a custom range or specific device:
 ```
 sudo python3 network_scan_email_compare.py 192.168.0.*
 ```
@@ -26,9 +26,9 @@ sudo python3 network_scan_email_compare.py 192.168.0.1/24
 ```
 sudo python3 network_scan_email_compare.py 192.168.0.91
 ```
-This let's you enter a custom range or specific device.
 
 
+Output:
 ```
 --@server:/testing $ sudo python3 network_scan_email_compare.py
 
