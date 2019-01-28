@@ -7,6 +7,28 @@ For the scripts with email you have to enter your credentials.
 
 The script `network_scan_email_compare.py` has a list with all devices it has ever seen (`network_scan_all.json`). If an unknown device is detected, an email is sent.
 
+
+
+Use:
+```
+sudo python3 network_scan_email_compare.py
+```
+This will automatically use the full IP range, which your device is in.
+
+
+
+```
+sudo python3 network_scan_email_compare.py 192.168.0.*
+```
+```
+sudo python3 network_scan_email_compare.py 192.168.0.1/24
+```
+```
+sudo python3 network_scan_email_compare.py 192.168.0.91
+```
+This let's you enter a custom range or specific device.
+
+
 ```
 --@server:/testing $ sudo python3 network_scan_email_compare.py
 
