@@ -12,7 +12,14 @@ The script `network_scan_email_compare.py` has a list with all devices it has ev
 
 Time: 2019-01-19 05:41:57
 
-Public IP: 89.215.12.71
+IP Table of server.gateway:
+
+IPv4 local: 192.168.0.74
+IPv4 public: 89.215.12.71
+IPv6 local: fb00::a00:11ff:abc1:de0f
+IPv6 public: n/a
+
+Interface: Ethernet (eth1)
 
 Open ports:
 
