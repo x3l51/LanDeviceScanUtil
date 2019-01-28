@@ -56,6 +56,7 @@ dataListNew.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 dataListAll.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n') 
 
+
 public_ip = requests.get('http://ip.42.pl/raw').text
 hostname = "ip.42.pl"
 response = os.system("ping -c 1 " + hostname + " > /dev/null 2>&1")
@@ -81,7 +82,12 @@ if response == 0:
         stdoutdataVendor = subprocess.getoutput("grep -i \"" + stdoutdataMACDiff + "\" /var/lib/ieee-data/oui.txt | awk '{$1=$2=\"\"; print substr($0,2)}'")
     except:
         stdoutdataVendor = "n/a"
-    subprocess.check_call("sudo nmap -sP -sn -oX network_scan_online.log 192.168.0.* > /dev/null 2>&1", shell=True)
+    try:
+        if sys.argv[1]:
+            scanRange = sys.argv[1]
+    except:
+        scanRange = (subprocess.getoutput("ifconfig | grep \"inet \" | grep -v 127.0.0.1 | awk '{print $2}' | cut -d \".\" -f -3") + ".*")
+    subprocess.check_call("sudo nmap -sP -sn -oX network_scan_online.log " + scanRange + " > /dev/null 2>&1", shell=True)
     
     if os.path.exists('network_scan_info.log'):
         if time.time() - os.path.getmtime('network_scan_info.log') > (60 * 60):
