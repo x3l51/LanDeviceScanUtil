@@ -22,11 +22,11 @@ CRED = '\033[91m'
 CEND = '\033[0m'
 
 if sys.version_info[0] < 3:
-    print(CRED + "Restart the script using python3: 'sudo python3 network_scan_email_compare.py'" + CEND)
+    print(CRED + "\nRestart the script using python3: 'sudo python3 network_scan_email_compare.py'\n" + CEND)
     sys.exit(0)
 
 if os.geteuid() != 0:
-    print(CRED + "Restart the script with root privileges: 'sudo python3 network_scan_email_compare.py'" + CEND)
+    print(CRED + "\nRestart the script with root privileges: 'sudo python3 network_scan_email_compare.py'\n" + CEND)
     sys.exit(0)
 
 try:
@@ -410,6 +410,9 @@ def sendMail():
     try:
         with open('credentials.json') as cred_file:
             cred_all = json.load(cred_file)
+        mailEnable = cred_all["mailEnable"]
+        if mailEnable is "0":
+            os._exit(0)
         emailfrom = cred_all["sender"]
         emailto = cred_all["receiver"]
         mailServer = cred_all["mailServer"]
@@ -451,6 +454,7 @@ def sendMail():
         if inpOne in ('y', 'yes'):
             if not os.path.exists('credentials.json'):
                 cred_all_dummy = {
+                    "mailEnable": "1",
                     "sender": "",
                     "receiver": "",
                     "mailServer": "",
@@ -462,10 +466,15 @@ def sendMail():
 
             with open('credentials.json', 'r') as cred_file:
                 cred_all = json.load(cred_file)
+            mailEnableBinary = cred_all["mailEnable"]
             emailfrom = cred_all["sender"]
             emailto = cred_all["receiver"]
             mailServer = cred_all["mailServer"]
             password = cred_all["password"]
+            if mailEnableBinary is "0":
+                mailEnable = "no"
+            else:
+                mailEnable = "yes"
             if emailfrom is "":
                 emailfrom = "n/a"
             if emailto is "":
@@ -475,36 +484,46 @@ def sendMail():
             if password is "":
                 password = "n/a"
             maskedPassword = password[:3] + (len(password)-3)*"*"
-            print('\nSaved credentials:\n')
-            print('\nSender mail address: ' + emailfrom)
+            print('\nSaved credentials:')
+            print('\nMailing enabled: ' + mailEnable)
+            print('Sender mail address: ' + emailfrom)
             print('Receiver mail address: ' + emailto)
             print('Mail server: ' + mailServer)
             print('Password: ' + maskedPassword)
             print('\nEnter new credentials:\n')
 
-            inpSen = input("Sender mail address: ").lower()
-            inpRec = input("Receiver mail address: ").lower()
-            inpMaSe = input("Mail server: ").lower()
-            inpPw = getpass.getpass()
-
-            sender_val = {'sender': inpSen}
-            receiver_val = {'receiver': inpRec}
-            mailServ_val = {'mailServer': inpMaSe}
-            pw_val = {'password': inpPw}
+            inpEna = input("Enable mail (yes/no): ").lower()
 
             with open('credentials.json') as cred_file:
                 cred_all = json.load(cred_file)
-
-            cred_all.update(sender_val)
-            cred_all.update(receiver_val)
-            cred_all.update(mailServ_val)
-            cred_all.update(pw_val)
-
-            with open('credentials.json', 'w') as cred_file:
-                json.dump(cred_all, cred_file)
-
-            print('New credentials successfully set.\n')
             
+            if inpEna in ('n', 'no'):
+                mailEnable_val = {'mailEnable': "0"}
+                cred_all.update(mailEnable_val)
+                with open('credentials.json', 'w') as cred_file:
+                    json.dump(cred_all, cred_file)
+                print(CRED + '\nMailing successfully disabled.\n' + CEND)
+            elif inpEna in ('y', 'yes'):
+                inpSen = input("Sender mail address: ").lower()
+                inpRec = input("Receiver mail address: ").lower()
+                inpMaSe = input("Mail server: ").lower()
+                inpPw = getpass.getpass()
+                mailEnable_val = {'sender': "1"}
+                sender_val = {'sender': inpSen}
+                receiver_val = {'receiver': inpRec}
+                mailServ_val = {'mailServer': inpMaSe}
+                pw_val = {'password': inpPw}
+                cred_all.update(sender_val)
+                cred_all.update(receiver_val)
+                cred_all.update(mailServ_val)
+                cred_all.update(pw_val)
+                with open('credentials.json', 'w') as cred_file:
+                    json.dump(cred_all, cred_file)
+                print('\nNew credentials successfully set.\n')
+            else:
+                print(CRED + '\nInvalid input. Starting over.\n' + CEND)
+                sendMail()
+
             sendMail()
 
         elif inpOne in ('n', 'no'):
