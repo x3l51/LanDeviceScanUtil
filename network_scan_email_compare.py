@@ -36,6 +36,7 @@ except ImportError:
     subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-nmap -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3 -m pip install requests > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
 
 date = datetime.datetime.now()
 timeNow = str(date.strftime('%Y-%m-%d_%H:%M:%S'))
@@ -227,9 +228,13 @@ def func():
                 if MAC_get == stdoutdataMAC:
                     NAME_get = (stdoutdataName)
 
+                nmbName = subprocess.getoutput("nmblookup -A " + IP_get + " | grep -v \"<GROUP>\" | grep -v \"Looking\" | awk 'NR==1{print $1}'")
                 stdoutdataArpName = subprocess.getoutput("arp " + IP_get + " | grep -v Address | awk '{print$1}'")
                 if stdoutdataArpName == IP_get:
-                    NAME_get = ('n/a')
+                    if nmbName not in ('No'):
+                        NAME_get = nmbName
+                    else:
+                        NAME_get = ('n/a')
                 else:
                     NAME_get = stdoutdataArpName
         except:
@@ -268,6 +273,9 @@ def func():
                         VENDOR_get = ('n/a')
                 else:
                     VENDOR_get = ('n/a')
+
+            NAME_val = {'NAME': NAME_get}
+            data_all[MAC_get].update(NAME_val)
 
             dataList.append('Vendor: ' + VENDOR_get)
             print('Vendor: ' + VENDOR_get)
