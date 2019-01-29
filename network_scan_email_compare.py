@@ -107,15 +107,15 @@ if response == 0:
 
     if os.path.exists('network_scan_info.log'):
         if time.time() - os.path.getmtime('network_scan_info.log') > (60 * 60):
-            if public_ip is "":
-                subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub + " > /dev/null 2>&1", shell=True)
-            else:
+            if stdoutdataIP6pub in (None, '', 'n/a'):
                 subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ip + " > /dev/null 2>&1", shell=True)
+            else:
+                subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub + " > /dev/null 2>&1", shell=True)
     else:
-        if public_ip is "":
-            subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub + " > /dev/null 2>&1", shell=True)
-        else:
+        if stdoutdataIP6pub in (None, '', 'n/a'):
             subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ip + " > /dev/null 2>&1", shell=True)
+        else:
+            subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub + " > /dev/null 2>&1", shell=True)
 
     with open('network_scan_info.log') as infoFile:
         infoAll = infoFile.read()
