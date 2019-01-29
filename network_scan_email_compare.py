@@ -52,6 +52,7 @@ dataListHTML.append('<html><head><meta http-equiv="refresh" content="60" charset
         body {margin: 0;font-family: Arial, Helvetica, sans-serif;} \
         .header {padding: 2px 16px; background: #555;color: #f1f1f1;} \
         .content {padding: 16px;} \
+        a:link {text-decoration: none;color: black;} \
         .sticky {padding: 2px 33px; background: #555;color: #f1f1f1;position: fixed;top: 0;width: 100%;} \
         .sticky + .content {padding-top: 102px;} \
         table {width: 100%;border-collapse: collapse;} \
@@ -367,8 +368,8 @@ def generateListAll():
 def generateListHTML():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
-
         for i, key in enumerate(data_all.keys()):
+
             if i % 2 == 0:
                 dataListHTML.append('<tr>')
             key_NAME = (data_all[key]["NAME"])
@@ -377,6 +378,18 @@ def generateListHTML():
             key_VENDOR = (data_all[key]["VENDOR"])
             key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
             key_LAST_SEEN = (data_all[key]["SEEN"])
+
+            for x in range (0,5):
+                if x is 5:
+                    x = 0
+                print("Scanning " + key_IP + " (" + key_NAME + ") for services " + "." * x)
+                sys.stdout.write("\033[F")
+                sys.stdout.write("\033[K")
+                time.sleep(0.8)
+            stdoutdataServices = subprocess.getoutput("nmap -p80,443 " + key_IP + " | grep -v Starting | grep http | cut -d/ -f1")
+
+            if stdoutdataServices not in (''):
+                key_NAME = ('<a target="_blank" rel="noopener noreferrer" href="http://' + key_IP + '/">' + key_NAME + ' <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/External_link_font_awesome.svg/512px-External_link_font_awesome.svg.png" alt="' + key_NAME + '" height="8" width="8"></a>')
 
             if key_LAST_SEEN == timeNow:
                 dataListHTML.append('<td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
