@@ -1,9 +1,7 @@
 # LanDeviceScanUtil
 Scans the local network for devices in IP range 192.168.0.*
 
-You'll find a human readable output file named `network_scan_all.txt` and a html fine named `network_scan_all.html`, which you could `cp` via cron into your apache server
-
-For the scripts with email you have to enter your credentials.
+You'll find a human readable output file named `network_scan_all.txt` and a html fine named `network_scan_all.html`, which you could `cp` via cron into your apache server.
 
 The script `network_scan_email_compare.py` has a list with all devices it has ever seen (`network_scan_all.json`). If an unknown device is detected, an email is sent.
 
@@ -85,8 +83,6 @@ If you want to have an email sent everytime an unknown device is being discovere
 Run the script as a cronjob every minute. To do so, download the script with:
 
     sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_email_compare.py
-
-And modify the script to contain your credentials for sending emails.
     
 Then type:
 
@@ -102,6 +98,6 @@ Append this at the end of the file to have it run every minute:
     
 
 
-You could also have all this automated with this commands: (you still have to put in your email creds tho)
+You could also have all this automated with this commands:
 
     sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_setup.sh && sudo bash network_scan_setup.sh
