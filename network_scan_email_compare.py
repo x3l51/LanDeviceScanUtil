@@ -36,6 +36,8 @@ except ImportError:
     subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-nmap -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3 -m pip install requests > {}".format(os.devnull), shell=True)
+
+if not os.path.exists('/usr/bin/nmblookup'):
     subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
 
 date = datetime.datetime.now()
@@ -106,6 +108,9 @@ if response == 0:
         scanRange = (subprocess.getoutput("ifconfig | grep inet | grep -v 127.0.0.1 | grep -v ::1 | awk 'NR==1{print $2}' | cut -d: -f2 | cut -d. -f -3") + ".*")
 
     subprocess.check_call("sudo nmap -sP -sn -oX network_scan_online.log " + scanRange + " > /dev/null 2>&1", shell=True)
+    
+    hostsOnlineStr = subprocess.getoutput("sudo nmap -sn " + scanRange + " | grep \"hosts up)\" | cut -d\( -f2 | awk '{print$1}'")
+    hostsOnline = int(hostsOnlineStr)
 
     if os.path.exists('network_scan_info.log'):
         if time.time() - os.path.getmtime('network_scan_info.log') > (60 * 60):
@@ -197,6 +202,10 @@ data = doc.getElementsByTagName('host')
 
 def func():
     for i, v in enumerate(data):
+        progbar(i, hostsOnline, 20)
+        print(" #" + str(i+1) + " of #" + str(hostsOnline) + " - Scanning for devices. This might take a few minutes")
+        sys.stdout.write("\033[F")
+        sys.stdout.write("\033[K")
 
         items = v.getElementsByTagName('address')
         itemsTwo = v.getElementsByTagName('hostname')
@@ -335,8 +344,9 @@ def func():
 def generateListAll():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
-
-        for key in data_all.keys():
+        for i, key in enumerate(data_all.keys()):
+            global z
+            z = i
             key_NAME = (data_all[key]["NAME"])
             key_IP = (data_all[key]["IP"])
             key_MAC = (data_all[key]["MAC"])
@@ -365,31 +375,73 @@ def generateListAll():
         for item in dataListAll:
             readableList.write("%s\n" % item)
 
+def progbar(curr, total, full_progbar):
+    frac = curr/total
+    filled_progbar = round(frac*full_progbar)
+    print('\r', '#'*filled_progbar + '-'*(full_progbar-filled_progbar), '[{:>7.2%}]'.format(frac), end='')
+
 def generateListHTML():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
         for i, key in enumerate(data_all.keys()):
+            progbar(i, z, 20)
 
             if i % 2 == 0:
                 dataListHTML.append('<tr>')
             key_NAME = (data_all[key]["NAME"])
+            key_NAME_raw = (data_all[key]["NAME"])
             key_IP = (data_all[key]["IP"])
             key_MAC = (data_all[key]["MAC"])
             key_VENDOR = (data_all[key]["VENDOR"])
             key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
             key_LAST_SEEN = (data_all[key]["SEEN"])
 
-            for x in range (0,5):
-                if x is 5:
-                    x = 0
-                print("Scanning " + key_IP + " (" + key_NAME + ") for services " + "." * x)
-                sys.stdout.write("\033[F")
-                sys.stdout.write("\033[K")
-                time.sleep(0.8)
-            stdoutdataServices = subprocess.getoutput("nmap -p80,443 " + key_IP + " | grep -v Starting | grep http | cut -d/ -f1")
+            print(" #" + str(i+1) + " of #" + str(z) + " - Scanning " + key_IP + " (" + key_NAME_raw + ") for services")
+            sys.stdout.write("\033[F")
+            sys.stdout.write("\033[K")
 
-            if stdoutdataServices not in (''):
-                key_NAME = ('<a target="_blank" rel="noopener noreferrer" href="http://' + key_IP + '/">' + key_NAME + ' <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/External_link_font_awesome.svg/512px-External_link_font_awesome.svg.png" alt="' + key_NAME + '" height="8" width="8"></a>')
+            stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IP + " | cut -d/ -f3")
+            stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
+            print("stdoutdataURL " + stdoutdataURL)
+            if stdoutdataServices == 'text/html':
+                key_IP_url = ('"http://' + key_IP + '/"')
+                key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IP_url + '>' + key_NAME_raw + ' \
+                    <img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+                    + key_NAME_raw + '" height="10" width="10"></a>')
+            elif stdoutdataURL != key_IP:
+                stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IP)
+                key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + stdoutdataURL + '>' + key_NAME_raw + ' \
+                    <img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+                    + key_NAME_raw + '" height="10" width="10"></a>')
+            else:
+                stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 30 -Pn " + key_IP + " | grep open | cut -d/ -f1").splitlines()
+                for item in stdoutdataServicesPorts:
+                    stdoutdataForbidden = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + ":" + item + " | grep \"403 Forbidden\"")
+                    if stdoutdataForbidden == '':
+                        stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
+                        stdoutdataServicesSSL = subprocess.getoutput("curl --connect-timeout 3 --max-time 3 --insecure -s --head " + key_IP + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
+                        stdoutdataStatus = subprocess.getoutput("curl --connect-timeout 5 --max-time 5 --insecure -s --head https://" + key_IP + " | grep \"501 Not Implemented\"")
+                        if stdoutdataServices == 'text/html':
+                            key_IP_url = ('"http://' + key_IP + ':' + item + '/"')
+                            key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IP_url + '>' + key_NAME_raw + ' \
+                            <img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+                            + key_NAME_raw + '" height="10" width="10"></a>')
+                            break
+                        elif stdoutdataServicesSSL == 'text/html':
+                            key_IP_url = ('"https://' + key_IP + ':' + item + '/"')
+                            key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IP_url + '>' + key_NAME_raw + ' \
+                            <img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+                            + key_NAME_raw + '" height="10" width="10"></a>')
+                            break
+                        elif stdoutdataStatus == 'HTTP/1.1 501 Not Implemented':
+                            key_IP_url = ('"https://' + key_IP + '/"')
+                            key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IP_url + '>' + key_NAME_raw + ' \
+                            <img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+                            + key_NAME_raw + '" height="10" width="10"></a>')
+                            break
+                        else:
+                            continue
+                    continue
 
             if key_LAST_SEEN == timeNow:
                 dataListHTML.append('<td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
