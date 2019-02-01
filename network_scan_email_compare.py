@@ -2,40 +2,54 @@
 # -*- coding: utf-8 -*-
 # network_scan_email_compare.py
 
+import sys
+import os
+import platform
+
+CRED = '\033[91m'
+CEND = '\033[0m'
+
+opSys = platform.system()
+
+if opSys == 'Linux':
+    if os.geteuid() != 0:
+        print(CRED + "\nRestart the script with root privileges: 'sudo python3 network_scan_email_compare.py'\n" + CEND)
+        sys.exit(0)
+elif opSys is 'Windows':
+    print(CRED + "\nIs this script running on Windows? Try your luck! [ENTER]\n" + CEND)
+elif opSys is 'Darwin':
+    print(CRED + "\nIs this script running on an Apple device? Try your luck! [ENTER]\n" + CEND)
+else:
+    print(CRED + "\nCan\'t detect your operating system. Try your luck! [ENTER]\n" + CEND)
+
+if sys.version_info[0] < 3:
+    print(CRED + "\nRestart the script using python3: 'sudo python3 network_scan_email_compare.py\n" + CEND)
+    sys.exit(0)
+
 import datetime
 import subprocess
 import smtplib
 import mimetypes
 import email
-import os
 import os.path, time
-import sys
 import json
 import getpass
+import base64
 from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from xml.dom import minidom
 
-CRED = '\033[91m'
-CEND = '\033[0m'
-
-if sys.version_info[0] < 3:
-    print(CRED + "\nRestart the script using python3: 'sudo python3 network_scan_email_compare.py'\n" + CEND)
-    sys.exit(0)
-
-if os.geteuid() != 0:
-    print(CRED + "\nRestart the script with root privileges: 'sudo python3 network_scan_email_compare.py'\n" + CEND)
-    sys.exit(0)
-
 try:
     import requests
     import nmap
+    from Crypto.Cipher import AES
 except ImportError:
     subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-nmap -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3 -m pip install requests > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo -H python3 -m pip install pyCrypto -y > {}".format(os.devnull), shell=True)
 
 if not os.path.exists('/usr/bin/nmblookup'):
     subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
@@ -203,7 +217,7 @@ data = doc.getElementsByTagName('host')
 def func():
     for i, v in enumerate(data):
         progbar(i, hostsOnline, 20)
-        print(" #" + str(i+1) + " of #" + str(hostsOnline) + " - Scanning for devices. This might take a few minutes")
+        print(" #" + str(i) + " of #" + str(hostsOnline) + " - Scanning for devices. This might take a few minutes")
         sys.stdout.write("\033[F")
         sys.stdout.write("\033[K")
 
@@ -344,7 +358,11 @@ def func():
 def generateListAll():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
-        for i, key in enumerate(data_all.keys()):
+
+        data_all_sorted = sorted([*data_all.keys()], key=lambda x: (data_all[x]['SEEN'], data_all[x]['IP']), reverse=True)
+
+        for i, item in enumerate(data_all_sorted):
+            key = item
             global z
             z = i
             key_NAME = (data_all[key]["NAME"])
@@ -383,7 +401,11 @@ def progbar(curr, total, full_progbar):
 def generateListHTML():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
-        for i, key in enumerate(data_all.keys()):
+
+        data_all_sorted = sorted([*data_all.keys()], key=lambda x: (data_all[x]['SEEN'], data_all[x]['IP']), reverse=True)
+
+        for i, item in enumerate(data_all_sorted):
+            key = item
             progbar(i, z, 20)
 
             if i % 2 == 0:
@@ -395,14 +417,13 @@ def generateListHTML():
             key_VENDOR = (data_all[key]["VENDOR"])
             key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
             key_LAST_SEEN = (data_all[key]["SEEN"])
-
+            
             print(" #" + str(i+1) + " of #" + str(z) + " - Scanning " + key_IP + " (" + key_NAME_raw + ") for services")
             sys.stdout.write("\033[F")
             sys.stdout.write("\033[K")
 
             stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IP + " | cut -d/ -f3")
             stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-            print("stdoutdataURL " + stdoutdataURL)
             if stdoutdataServices == 'text/html':
                 key_IP_url = ('"http://' + key_IP + '/"')
                 key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IP_url + '>' + key_NAME_raw + ' \
@@ -414,10 +435,11 @@ def generateListHTML():
                     <img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
                     + key_NAME_raw + '" height="10" width="10"></a>')
             else:
-                stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 30 -Pn " + key_IP + " | grep open | cut -d/ -f1").splitlines()
+                stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 20 -Pn " + key_IP + " | grep open | cut -d/ -f1").splitlines()
                 for item in stdoutdataServicesPorts:
                     stdoutdataForbidden = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + ":" + item + " | grep \"403 Forbidden\"")
-                    if stdoutdataForbidden == '':
+                    stdoutdataUnavailable = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + ":" + item + " | grep \"503 Service Unavailable\"")
+                    if stdoutdataForbidden == '' and stdoutdataUnavailable == '':
                         stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IP + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
                         stdoutdataServicesSSL = subprocess.getoutput("curl --connect-timeout 3 --max-time 3 --insecure -s --head " + key_IP + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
                         stdoutdataStatus = subprocess.getoutput("curl --connect-timeout 5 --max-time 5 --insecure -s --head https://" + key_IP + " | grep \"501 Not Implemented\"")
@@ -480,6 +502,8 @@ def generateListHTML():
             readableList.write("%s\n" % item)
 
 def sendMail():
+    secret_key = "{: <32}".format(stdoutdataMAC).encode("utf-8")
+    cipher = AES.new(secret_key,AES.MODE_ECB)
     try:
         with open('credentials.json') as cred_file:
             cred_all = json.load(cred_file)
@@ -490,6 +514,9 @@ def sendMail():
         emailto = cred_all["receiver"]
         mailServer = cred_all["mailServer"]
         password = cred_all["password"]
+
+        decodedpassword = cipher.decrypt(base64.b64decode(password))
+        password = decodedpassword.decode('utf8').strip()
 
         fileToSend = "network_scan_all.txt"
 
@@ -544,6 +571,10 @@ def sendMail():
             emailto = cred_all["receiver"]
             mailServer = cred_all["mailServer"]
             password = cred_all["password"]
+            
+            decodedpassword = cipher.decrypt(base64.b64decode(password))
+            password = decodedpassword.decode('utf8').strip()
+
             if mailEnableBinary is "0":
                 mailEnable = "no"
             else:
@@ -581,6 +612,10 @@ def sendMail():
                 inpRec = input("Receiver mail address: ").lower()
                 inpMaSe = input("Mail server: ").lower()
                 inpPw = getpass.getpass()
+                inpPw = "{: <32}".format(inpPw)
+                inpPw = base64.b64encode(cipher.encrypt(inpPw))
+                inpPw = inpPw.decode('utf8')
+
                 mailEnable_val = {'sender': "1"}
                 sender_val = {'sender': inpSen}
                 receiver_val = {'receiver': inpRec}
