@@ -8,8 +8,8 @@ sudo unzip master.zip
 sudo rm master.zip
 cd /home/$curUSER/LanDeviceScanUtil-master
 sudo chmod +x network_scan_email_compare.py
-crontab -l > mycron
+sudo crontab -l > mycron
 echo "*/30 * * * * cd /home/$curUSER/LanDeviceScanUtil-master && sudo python3 network_scan_email_compare.py" >> mycron
-crontab mycron
-rm mycron
+sudo crontab mycron
+sudo rm mycron
 sudo python3 network_scan_email_compare.py
