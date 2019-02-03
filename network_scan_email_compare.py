@@ -46,12 +46,17 @@ try:
     import nmap
     from Crypto.Cipher import AES
 except ImportError:
+    subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-nmap -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3 -m pip install requests > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H python3 -m pip install pyCrypto -y > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo -H python3 -m pip install pyCrypto > {}".format(os.devnull), shell=True)
 
 if not os.path.exists('/usr/bin/nmblookup'):
+    subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
 
 date = datetime.datetime.now()
@@ -364,7 +369,7 @@ def generateListAll():
         for i, item in enumerate(data_all_sorted):
             key = item
             global z
-            z = i
+            z = i + 1
             key_NAME = (data_all[key]["NAME"])
             key_IP = (data_all[key]["IP"])
             key_MAC = (data_all[key]["MAC"])
