@@ -301,6 +301,13 @@ doc = minidom.parse('network_scan_online.log')
 data = doc.getElementsByTagName('host')
 
 def func():
+    with open('network_scan_all.json') as json_file:
+            data_all = json.load(json_file)
+
+            if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 or data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                subject = "Public IP has changed - network_scan_online_" + timeNow
+                sendMail(subject)
+
     for i, v in enumerate(data):
         progbar(i, hostsOnline, 20)
         print(" #" + str(i) + " of #" + str(hostsOnline) + " - Scanning for devices. This might take a few minutes")
@@ -379,14 +386,6 @@ def func():
         with open('network_scan_all.json') as json_file:
             data_all = json.load(json_file)
 
-            ###
-            try:
-                if data_all[stdoutdataMAC]["IPv4pub"] != stdoutdataIP4pub or data_all[stdoutdataMAC]["IPv6pub"] != stdoutdataIP6pub:
-                    sendMail()
-            except:
-                print("EXCEPT")
-            ###
-
         if MAC_get in data_all:
             if VENDOR_get == 'n/a':
                 stdoutdataMACDiffSec = MAC_get[:8].replace(":","-")
@@ -399,6 +398,15 @@ def func():
                         VENDOR_get = ('n/a')
                 else:
                     VENDOR_get = ('n/a')
+
+            IPv4loc_val = {'IPv4loc': stdoutdataIP4loc}
+            data_all[MAC_get].update(IPv4loc_val)
+            IPv4pub_val = {'IPv4pub': public_ipv4}
+            data_all[MAC_get].update(IPv4pub_val)
+            IPv6loc_val = {'IPv6loc': stdoutdataIP6loc}
+            data_all[MAC_get].update(IPv6loc_val)
+            IPv6pub_val = {'IPv6pub': stdoutdataIP6pub}
+            data_all[MAC_get].update(IPv6pub_val)
 
             NAME_val = {'NAME': NAME_get}
             data_all[MAC_get].update(NAME_val)
@@ -456,7 +464,8 @@ def func():
     generateListHTML()
 
     if 'Status: Unknown device.' in dataList:
-        sendMail()
+        subject = "Unknown device detected - network_scan_online_" + timeNow
+        sendMail(subject)
 
 def generateDiagram(): 
     with open('network_scan_all.json') as json_file:
@@ -707,7 +716,7 @@ def generateListHTML():
         for item in dataListHTML:
             readableList.write("%s\n" % item)
 
-def sendMail():
+def sendMail(subject):
     secret_key = "{: <32}".format(stdoutdataMAC).encode("utf-8")
     cipher = AES.new(secret_key,AES.MODE_ECB)
     try:
@@ -729,8 +738,8 @@ def sendMail():
         msg = MIMEMultipart()
         msg["From"] = emailfrom
         msg["To"] = emailto
-        msg["Subject"] = "Unknown device detected - network_scan_online_" + timeNow
-        msg.preamble = "Unknown device detected - network_scan_online_" + timeNow
+        msg["Subject"] = subject
+        msg.preamble = subject
 
         ctype, encoding = mimetypes.guess_type(fileToSend)
         if ctype is None or encoding is not None:
@@ -753,7 +762,7 @@ def sendMail():
         server.login(emailfrom, password)
         server.sendmail(emailfrom, emailto, msg.as_string())
         server.quit()
-        print('Email got sent.\n')
+        print('Email got sent. Subject: ' + subject + '\n')
     except:
         print(CRED + 'Check the mail credentials. Something is wrong here >> credentials.json\n' + CEND)
         inpOne = input("Do you wanna edit the credentials for sending mail? (y/n) ").lower()
