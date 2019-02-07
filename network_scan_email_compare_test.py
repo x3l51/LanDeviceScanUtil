@@ -91,7 +91,7 @@ dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charse
         a:link {text-decoration: none;color: black;} \
         .sticky {padding: 2px 33px; background: #555;color: #f1f1f1;position: fixed;top: 0;width: 100%;} \
         .sticky + .content {padding-top: 65px;} \
-        table {max-width: 80%;border-collapse: collapse;} \
+        table {max-width: 100%;border-collapse: collapse;} \
         td { min-width: 340; width: 50%; border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         #hide{display: inline;} \
@@ -383,8 +383,6 @@ def func():
         print('Name: ' + NAME_get)
         dataList.append('IPv4 local: ' + IPv4loc_get)
         print('IPv4 local: ' + IPv4loc_get)
-        dataList.append('IPv4 public: ' + IPv4pub_get)
-        print('IPv4 public: ' + IPv4pub_get)
         dataList.append('MAC: ' + MAC_get)
         print('MAC: ' + MAC_get)
 
@@ -616,7 +614,6 @@ def generateListHTML():
             key_NAME = (data_all[key]["NAME"])
             key_NAME_raw = (data_all[key]["NAME"])
             key_IPv4loc = (data_all[key]["IPv4loc"])
-            key_IPv4pub = (data_all[key]["IPv4pub"])
             key_MAC = (data_all[key]["MAC"])
             key_VENDOR = (data_all[key]["VENDOR"])
             key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
@@ -672,7 +669,6 @@ def generateListHTML():
             if key_LAST_SEEN == timeNow:
                 dataListHTML.append('<tr><td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
                 dataListHTML.append('<tr><td>IPv4 local: ' + key_IPv4loc + '<br>')
-                dataListHTML.append('IPv4 public: ' + key_IPv4pub + '<br>')
                 dataListHTML.append('MAC: ' + key_MAC + '<br>')
                 dataListHTML.append('Vendor: ' + key_VENDOR + '<br>')
                 dataListHTML.append('First seen: ' + key_FIRST_SEEN + '<br>')
@@ -690,7 +686,6 @@ def generateListHTML():
             else:
                 dataListHTML.append('<tr><td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
                 dataListHTML.append('<tr><td>IPv4 local: ' + key_IPv4loc + '<br>')
-                dataListHTML.append('IPv4 public: ' + key_IPv4pub + '<br>')
                 dataListHTML.append('MAC: ' + key_MAC + '<br>')
                 dataListHTML.append('Vendor: ' + key_VENDOR + '<br>')
                 dataListHTML.append('First seen: ' + key_FIRST_SEEN + '<br>')
