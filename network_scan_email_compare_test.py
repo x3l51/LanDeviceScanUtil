@@ -96,7 +96,7 @@ dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charse
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         #hide{display: inline;} \
         #show{display: none;} \
-        @media only screen and (max-width: 750px) { \
+        @media (max-width: 50em) { \
         table {width: 100%;border-collapse: collapse;} \
         td { width: 100%; border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
