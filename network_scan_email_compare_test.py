@@ -308,7 +308,7 @@ def func():
             if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
                 subject = "Public IPs have changed - "
                 sendMail(subject)
-            elif data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
+            elif stdoutdataIP6pub ==  "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
                 subject = "Public IPv4 has changed - "
                 sendMail(subject)
             elif data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
@@ -490,74 +490,74 @@ def generateDiagram():
                 with open('./log/statistic.json', 'w') as outfile:
                     json.dump(logData, outfile, sort_keys=False, indent=4)
 
-                with open('./log/statistic.json') as json_file:
-                    logData = json.load(json_file)
+        with open('./log/statistic.json') as json_file:
+            logData = json.load(json_file)
 
-                    for item in logData:
-                        key = item
+            for item in logData:
+                key = item
 
-                        X = []
-                        Y = []
-                        labelsx = []
-                        labelsy = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00']
+                X = []
+                Y = []
+                labelsx = []
+                labelsy = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00']
+                
+                data = logData[key]
+                dateNow = str(date.strftime('%Y-%m-%d'))
+
+                for item in data:
+                    tdelta = unixtime - item
+                    fromNow = unixtime - tdelta
+
+                    if time.strftime('%m', time.localtime(tdelta)) != '01' or time.strftime('%d', time.localtime(tdelta)) > '07':
+
+                        X = ['-01']
+                        Y = [-1]
+
+                        plt.text(3, 12, 'NO DATA TO PLOT FOR THIS TIME PERIOD', horizontalalignment='center', verticalalignment='center')
+
+                    else:
+
+                        days = str(time.strftime('%d', time.localtime(tdelta)))
+
+                        hours = 1 / 60 * int((time.strftime('%M', time.localtime(fromNow)))) + int(time.strftime('%H', time.localtime(fromNow)))
+                        hoursRound = float("{0:.2f}".format(hours))
+
+                        if int(time.strftime('%H', time.localtime(fromNow))) > int(time.strftime('%H', time.localtime(unixtime))):
+                            days = str(int(time.strftime('%d', time.localtime(tdelta))) + 1)
                         
-                        data = logData[key]
-                        dateNow = str(date.strftime('%Y-%m-%d'))
+                        X.append(str("{:02d}".format(int(days))))
+                        Y.append(hoursRound)
 
-                        for item in data:
-                            tdelta = unixtime - item
-                            fromNow = unixtime - tdelta
+                for i in range(0, 7):
+                    dateDelta = datetime.timedelta(days = i)
+                    dateNow = date - dateDelta
+                    labelsx.append(str(dateNow.strftime('%Y-%m-%d')))
+                
+                X.reverse()
+                Y.reverse()
 
-                            if time.strftime('%m', time.localtime(tdelta)) != '01' or time.strftime('%d', time.localtime(tdelta)) > '07':
+                lowX = min(X)
 
-                                X = ['-01']
-                                Y = [-1]
-
-                                plt.text(3, 12, 'NO DATA TO PLOT FOR THIS TIME PERIOD', horizontalalignment='center', verticalalignment='center')
-
-                            else:
-
-                                days = str(time.strftime('%d', time.localtime(tdelta)))
-
-                                hours = 1 / 60 * int((time.strftime('%M', time.localtime(fromNow)))) + int(time.strftime('%H', time.localtime(fromNow)))
-                                hoursRound = float("{0:.2f}".format(hours))
-
-                                if int(time.strftime('%H', time.localtime(fromNow))) > int(time.strftime('%H', time.localtime(unixtime))):
-                                    days = str(int(time.strftime('%d', time.localtime(tdelta))) + 1)
-
-                                X.append(str("{:02d}".format(int(days))))
-                                Y.append(hoursRound)
-
-                        for i in range(0, 7):
-                            dateDelta = datetime.timedelta(days = i)
-                            dateNow = date - dateDelta
-                            labelsx.append(str(dateNow.strftime('%Y-%m-%d')))
-                        
-                        X.reverse()
-                        Y.reverse()
-
+                if lowX not in ('1', '01'):
+                    for x in range(1,int(lowX)):
                         lowX = min(X)
+                        nextlowX = int(lowX) - 1
+                        X.insert(0, str("{:02d}".format(nextlowX)))
+                        Y.insert(0, -1)
 
-                        if lowX not in ('1', '01'):
-                            for x in range(1,int(lowX)):
-                                lowX = min(X)
-                                nextlowX = int(lowX) - 1
-                                X.insert(0, str("{:02d}".format(nextlowX)))
-                                Y.insert(0, -1)
+                plt.scatter(X,Y,s=8, color='blue')
+                plt.xlim(-0.3,6.3)
+                plt.ylim(-0.5,24.5)
 
-                        plt.scatter(X,Y,s=8, color='blue')
-                        plt.xlim(-0.3,6.3)
-                        plt.ylim(-0.5,24.5)
+                plt.xticks(np.arange(7), labelsx, rotation=20)
+                plt.yticks(np.arange(0, 25, 3),labelsy)
+                plt.subplots_adjust(bottom=0.15)
 
-                        plt.xticks(np.arange(7), labelsx, rotation=20)
-                        plt.yticks(np.arange(0, 25, 3),labelsy)
-                        plt.subplots_adjust(bottom=0.15)
-
-                        plt.title('UPTIME OF ' + data_all[key]["NAME"] + ' (' + key + ')')
-                        plt.xlabel('DAYS')
-                        plt.ylabel('HOURS')
-                        plt.savefig("./log/" + key + "_7_days.png", dpi=300)
-                        plt.close()
+                plt.title('UPTIME OF ' + data_all[key]["NAME"] + ' (' + key + ')')
+                plt.xlabel('DAYS')
+                plt.ylabel('HOURS')
+                plt.savefig("./log/" + key + "_7_days.png", dpi=300)
+                plt.close()
 
 def generateListAll():
     with open('network_scan_all.json') as json_file:
