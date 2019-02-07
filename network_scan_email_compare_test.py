@@ -96,7 +96,7 @@ dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charse
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         #hide{display: inline;} \
         #show{display: none;} \
-        @media (max-width: 50em) { \
+        @media only screen and (max-width: 750px) { \
         table {width: 100%;border-collapse: collapse;} \
         td { width: 100%; border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
@@ -406,14 +406,15 @@ def func():
                 else:
                     VENDOR_get = ('n/a')
 
-            IPv4loc_val = {'IPv4loc': stdoutdataIP4loc}
-            data_all[MAC_get].update(IPv4loc_val)
-            IPv4pub_val = {'IPv4pub': public_ipv4}
-            data_all[MAC_get].update(IPv4pub_val)
-            IPv6loc_val = {'IPv6loc': stdoutdataIP6loc}
-            data_all[MAC_get].update(IPv6loc_val)
-            IPv6pub_val = {'IPv6pub': stdoutdataIP6pub}
-            data_all[MAC_get].update(IPv6pub_val)
+            if MAC_get == stdoutdataMAC:
+                IPv4loc_val = {'IPv4loc': stdoutdataIP4loc}
+                data_all[MAC_get].update(IPv4loc_val)
+                IPv4pub_val = {'IPv4pub': public_ipv4}
+                data_all[MAC_get].update(IPv4pub_val)
+                IPv6loc_val = {'IPv6loc': stdoutdataIP6loc}
+                data_all[MAC_get].update(IPv6loc_val)
+                IPv6pub_val = {'IPv6pub': stdoutdataIP6pub}
+                data_all[MAC_get].update(IPv6pub_val)
 
             NAME_val = {'NAME': NAME_get}
             data_all[MAC_get].update(NAME_val)
