@@ -81,7 +81,7 @@ dataList = []
 dataListNew = []
 dataListAll = []
 dataListHTML = []
-dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charset="utf-8" content="width=device-width, initial-scale=1"/><html lang="EN"><title>NET.SCAN</title><style> \
+dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charset="utf-8" name="viewport" content="width=device-width, initial-scale=1"/><html lang="EN"><title>NET.SCAN</title><style> \
         * {font-family: calibri, awesome, arial;} \
         .dot_green {height: 10px;width: 10px;background-color: green;border-radius: 50%;display: inline-block;} \
         .dot_red {height: 10px;width: 10px;background-color: red;border-radius: 50%;display: inline-block;} \
