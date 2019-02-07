@@ -384,7 +384,7 @@ def func():
                 if data_all[stdoutdataMAC]["IPv4pub"] != stdoutdataIP4pub or data_all[stdoutdataMAC]["IPv6pub"] != stdoutdataIP6pub:
                     sendMail()
             except:
-                continue
+                print("EXCEPT")
             ###
 
         if MAC_get in data_all:
