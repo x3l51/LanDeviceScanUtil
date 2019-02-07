@@ -75,6 +75,7 @@ unixtime = time.time()
 unixtimeStr = str(unixtime)
 date = datetime.datetime.now()
 timeNow = str(date.strftime('%Y-%m-%d_%H:%M:%S'))
+timeNowHuman = str(date.strftime('%Y-%m-%d %H:%M:%S'))
 
 dataList = []
 dataListNew = []
@@ -740,8 +741,8 @@ def sendMail(subject):
         msg = MIMEMultipart()
         msg["From"] = emailfrom
         msg["To"] = emailto
-        msg["Subject"] = subject + timeNow
-        msg.preamble = subject + timeNow
+        msg["Subject"] = subject + stdoutdataName + ' ' + timeNowHuman
+        msg.preamble = subject + stdoutdataName + ' ' + timeNowHuman
 
         ctype, encoding = mimetypes.guess_type(fileToSend)
         if ctype is None or encoding is not None:
