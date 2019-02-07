@@ -304,8 +304,14 @@ def func():
     with open('network_scan_all.json') as json_file:
             data_all = json.load(json_file)
 
-            if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 or data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
-                subject = "Public IP has changed - network_scan_online_" + timeNow
+            if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                subject = "Public IPs have changed - "
+                sendMail(subject)
+            elif data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
+                subject = "Public IPv4 has changed - "
+                sendMail(subject)
+            elif data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                subject = "Public IPv6 has changed - "
                 sendMail(subject)
 
     for i, v in enumerate(data):
@@ -464,7 +470,7 @@ def func():
     generateListHTML()
 
     if 'Status: Unknown device.' in dataList:
-        subject = "Unknown device detected - network_scan_online_" + timeNow
+        subject = "Unknown device detected - "
         sendMail(subject)
 
 def generateDiagram(): 
@@ -525,10 +531,6 @@ def generateDiagram():
                             dateDelta = datetime.timedelta(days = i)
                             dateNow = date - dateDelta
                             labelsx.append(str(dateNow.strftime('%Y-%m-%d')))
-
-                        print(data_all[key]["NAME"])
-                        print(key)
-                        ### This is printed 4 times. Why?
                         
                         X.reverse()
                         Y.reverse()
@@ -738,8 +740,8 @@ def sendMail(subject):
         msg = MIMEMultipart()
         msg["From"] = emailfrom
         msg["To"] = emailto
-        msg["Subject"] = subject
-        msg.preamble = subject
+        msg["Subject"] = subject + timeNow
+        msg.preamble = subject + timeNow
 
         ctype, encoding = mimetypes.guess_type(fileToSend)
         if ctype is None or encoding is not None:
