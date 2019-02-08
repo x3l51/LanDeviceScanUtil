@@ -89,13 +89,19 @@ dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charse
         .header {padding: 2px 16px; background: #555;color: #f1f1f1;} \
         .content {padding: 16px;} \
         a:link {text-decoration: none;color: black;} \
-        .sticky {padding: 2px 33px; background: #555;color: #f1f1f1;position: fixed;top: 0;width: 100%;} \
+        .sticky {z-index: 2;padding: 2px 33px; background: #555;color: #f1f1f1;position: fixed;top: 0;width: 100%;} \
         .sticky + .content {padding-top: 65px;} \
         table {max-width: 100%;border-collapse: collapse;} \
         td { min-width: 340; width: 50%; border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         #hide{display: inline;} \
         #show{display: none;} \
+         \
+        .container {position: relative;} \
+        .image {display: block;width: 100%;height: auto;} \
+        .overlay {position: absolute;top: 0;bottom: 0;left: 0;right: 0;height: 100%;width: 100%;opacity: 0;transition: .5s ease;background-color: #008CBA;text-align: center;} \
+        .container:hover .overlay {opacity: 1;} \
+         \
         @media only screen and (max-width: 750px) { \
         table {width: 100%;border-collapse: collapse;} \
         td { width: 100%; border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
@@ -532,11 +538,12 @@ def generateDiagram():
                 for z in range(1, int(min(X))):
                     X.insert(0, str("{:02d}".format(int(min(X))-1)))
                     Y.insert(0, -1)
-                for i in range(1, int(max(X))):#
+
+                for i in range(1, int(max(X))):
                     if (str("{:02d}".format(i))) not in X:
-                        xValIndex = X.index("{:02d}".format(i+1))
-                        X.insert(xValIndex, str("{:02d}".format(i)))
-                        Y.insert(0, -1)
+                        index = [ n for n,z in enumerate(X) if int(z)>int(i) ][0]
+                        X.insert(index, str("{:02d}".format(i)))
+                        Y.insert(index, -1)
 
                 plt.scatter(X,Y,s=8, color='blue')
                 plt.xlim(-0.3,6.3)
@@ -676,9 +683,9 @@ def generateListHTML():
                 dataListHTML.append('<font color="green">Status: Online</font> <span class="dot_green"></span><br>')
                 if os.path.exists('./log/' + key_MAC + '_7_days.png'):
                     dataListHTML.append('<br><div id="show"><a target="_blank" rel="noopener noreferrer" href="./log/' + key_MAC + '_7_days.png"> \
-                        <img src="./log/' + key_MAC + '_7_days.png" alt="' + key_NAME_raw + '" width="100%"></a></div></td></tr></table></td>')
+                        <div class="container"><img src="./log/' + key_MAC + '_7_days.png" class="image"><div class="overlay"><img src="./log/' + key_MAC + '_1_month.png" class="image"></div></div></a></div></td></tr></table></td>')
                     dataListHTML.append('<td><table><tr><td><div id="hide"><a target="_blank" rel="noopener noreferrer" href="./log/' + key_MAC + '_7_days.png"> \
-                        <img src="./log/' + key_MAC + '_7_days.png" alt="' + key_NAME_raw + '" width="100%"></a></div></td></tr></table></td></tr>')
+                        <div class="container"><img src="./log/' + key_MAC + '_7_days.png" class="image"><div class="overlay"><img src="./log/' + key_MAC + '_1_month.png" class="image"></div></div></a></div></td></tr></table></td></tr>')
                 else:
                     dataListHTML.append('</tr>')
 
@@ -693,9 +700,9 @@ def generateListHTML():
                 dataListHTML.append('<font color="red">Status: Offline</font> <span class="dot_red"></span><br>')
                 if os.path.exists('./log/' + key_MAC + '_7_days.png'):
                     dataListHTML.append('<br><div id="show"><a target="_blank" rel="noopener noreferrer" href="./log/' + key_MAC + '_7_days.png"> \
-                        <img src="./log/' + key_MAC + '_7_days.png" alt="' + key_NAME_raw + '" width="100%"></a></div></td></tr></table></td>')
+                        <div class="container"><img src="./log/' + key_MAC + '_7_days.png" class="image"><div class="overlay"><img src="./log/' + key_MAC + '_1_month.png" class="image"></div></div></a></div></td></tr></table></td>')
                     dataListHTML.append('<td><table><tr><td><div id="hide"><a target="_blank" rel="noopener noreferrer" href="./log/' + key_MAC + '_7_days.png"> \
-                        <img src="./log/' + key_MAC + '_7_days.png" alt="' + key_NAME_raw + '" width="100%"></a></div></td></tr></table></td></tr>')
+                        <div class="container"><img src="./log/' + key_MAC + '_7_days.png" class="image"><div class="overlay"><img src="./log/' + key_MAC + '_1_month.png" class="image"></div></div></a></div></td></tr></table></td></tr>')
                 else:
                     dataListHTML.append('</tr>')
 
