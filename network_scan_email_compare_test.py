@@ -179,22 +179,22 @@ if response == 0:
             else:
                 if public_ipv4 not in (None, '', 'n/a'):
                     subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
-                    subprocess.check_call("sudo nmap -6 -F -A -append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " >> /dev/null 2>&1", shell=True)
+                    subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
                 else:
                     subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
                 if stdoutdataIP6pub_lt not in (None, '', 'n/a'):
-                    subprocess.check_call("sudo nmap -6 -F -A -append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " >> /dev/null 2>&1", shell=True)
+                    subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " > /dev/null 2>&1", shell=True)
     else:
         if stdoutdataIP6pub in (None, '', 'n/a'):
             subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
         else:
             if public_ipv4 not in (None, '', 'n/a'):
                 subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
-                subprocess.check_call("sudo nmap -6 -F -A -append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " >> /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
             else:
                 subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
             if stdoutdataIP6pub_lt not in (None, '', 'n/a'):
-                subprocess.check_call("sudo nmap -6 -F -A -append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " >> /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " > /dev/null 2>&1", shell=True)
 
     with open('network_scan_info.log') as infoFile:
         infoAll = infoFile.read()
@@ -491,15 +491,13 @@ def generateDiagram():
 
         with open('./log/statistic.json') as json_file:
             logData = json.load(json_file)
-
             for item in logData:
                 key = item
-
                 X = []
                 Y = []
                 labelsx = []
+                labelsxWD = []
                 labelsy = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00']
-                
                 data = logData[key]
                 dateNow = str(date.strftime('%Y-%m-%d'))
 
@@ -508,16 +506,12 @@ def generateDiagram():
                     fromNow = unixtime - tdelta
 
                     if time.strftime('%m', time.localtime(tdelta)) != '01' or time.strftime('%d', time.localtime(tdelta)) > '07':
-
                         X = ['-01']
                         Y = [-1]
-
                         plt.text(3, 12, 'NO DATA TO PLOT FOR THIS TIME PERIOD', horizontalalignment='center', verticalalignment='center')
 
                     else:
-
                         days = str(time.strftime('%d', time.localtime(tdelta)))
-
                         hours = 1 / 60 * int((time.strftime('%M', time.localtime(fromNow)))) + int(time.strftime('%H', time.localtime(fromNow)))
                         hoursRound = float("{0:.2f}".format(hours))
 
@@ -527,10 +521,10 @@ def generateDiagram():
                         X.append(str("{:02d}".format(int(days))))
                         Y.append(hoursRound)
 
-                for i in range(0, 7):
+                for i in range(0, 31):
                     dateDelta = datetime.timedelta(days = i)
                     dateNow = date - dateDelta
-                    labelsx.append(str(dateNow.strftime('%Y-%m-%d')))
+                    labelsx.append(str(dateNow.strftime('%A'))[0:3] + ' ' + str(dateNow.strftime('%d. %b %y')))
 
                 X.reverse()
                 Y.reverse()
@@ -547,15 +541,21 @@ def generateDiagram():
                 plt.scatter(X,Y,s=8, color='blue')
                 plt.xlim(-0.3,6.3)
                 plt.ylim(-0.5,24.5)
-
                 plt.xticks(np.arange(7), labelsx, rotation=20)
                 plt.yticks(np.arange(0, 25, 3),labelsy)
-                plt.subplots_adjust(bottom=0.15)
-
                 plt.title('UPTIME OF ' + data_all[key]["NAME"] + ' (' + key + ')')
-                plt.xlabel('DAYS')
-                plt.ylabel('HOURS')
+                plt.tight_layout()
                 plt.savefig("./log/" + key + "_7_days.png", dpi=300)
+                plt.close()
+
+                plt.scatter(X,Y,s=8, color='blue')
+                plt.xlim(-0.3,30.3)
+                plt.ylim(-0.5,24.5)
+                plt.xticks(np.arange(31), labelsx, rotation=90)
+                plt.yticks(np.arange(0, 25, 3),labelsy)
+                plt.title('UPTIME OF ' + data_all[key]["NAME"] + ' (' + key + ')')
+                plt.tight_layout()
+                plt.savefig("./log/" + key + "_1_month.png", dpi=300)
                 plt.close()
 
 def generateListAll():
