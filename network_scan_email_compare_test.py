@@ -531,17 +531,17 @@ def generateDiagram():
                     dateDelta = datetime.timedelta(days = i)
                     dateNow = date - dateDelta
                     labelsx.append(str(dateNow.strftime('%Y-%m-%d')))
-                
+
                 X.reverse()
                 Y.reverse()
 
-                lowX = min(X)
-
-                if lowX not in ('1', '01'):
-                    for x in range(1,int(lowX)):
-                        lowX = min(X)
-                        nextlowX = int(lowX) - 1
-                        X.insert(0, str("{:02d}".format(nextlowX)))
+                for z in range(1, int(min(X))):
+                    X.insert(0, str("{:02d}".format(int(min(X))-1)))
+                    Y.insert(0, -1)
+                for i in range(1, int(max(X))):#
+                    if (str("{:02d}".format(i))) not in X:
+                        xValIndex = X.index("{:02d}".format(i+1))
+                        X.insert(xValIndex, str("{:02d}".format(i)))
                         Y.insert(0, -1)
 
                 plt.scatter(X,Y,s=8, color='blue')
