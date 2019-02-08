@@ -181,26 +181,26 @@ if response == 0:
     if os.path.exists('network_scan_info.log'):
         if time.time() - os.path.getmtime('network_scan_info.log') > (60 * 60):
             if stdoutdataIP6pub in (None, '', 'n/a'):
-                subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -F -A --host-timeout 20 -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
             else:
                 if public_ipv4 not in (None, '', 'n/a'):
-                    subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
-                    subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
+                    subprocess.check_call("sudo nmap -F -A --host-timeout 20 -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
+                    subprocess.check_call("sudo nmap -6 -F -A --host-timeout 20 --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
                 else:
-                    subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
+                    subprocess.check_call("sudo nmap -6 -F -A --host-timeout 20 -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
                 if stdoutdataIP6pub_lt not in (None, '', 'n/a'):
-                    subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " > /dev/null 2>&1", shell=True)
+                    subprocess.check_call("sudo nmap -6 -F -A --host-timeout 20 --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " > /dev/null 2>&1", shell=True)
     else:
         if stdoutdataIP6pub in (None, '', 'n/a'):
-            subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
+            subprocess.check_call("sudo nmap -F -A --host-timeout 20 -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
         else:
             if public_ipv4 not in (None, '', 'n/a'):
-                subprocess.check_call("sudo nmap -F -A -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
-                subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -F -A --host-timeout 20 -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -6 -F -A --host-timeout 20 --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
             else:
-                subprocess.check_call("sudo nmap -6 -F -A -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -6 -F -A --host-timeout 20 -oN network_scan_info.log " + stdoutdataIP6pub_lo + " > /dev/null 2>&1", shell=True)
             if stdoutdataIP6pub_lt not in (None, '', 'n/a'):
-                subprocess.check_call("sudo nmap -6 -F -A --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " > /dev/null 2>&1", shell=True)
+                subprocess.check_call("sudo nmap -6 -F -A --host-timeout 20 --append-output -oN network_scan_info.log " + stdoutdataIP6pub_lt + " > /dev/null 2>&1", shell=True)
 
     with open('network_scan_info.log') as infoFile:
         infoAll = infoFile.read()
