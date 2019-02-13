@@ -315,22 +315,20 @@ if response == 0:
     dataListHTML.append('</tr>')
 
     with open('network_scan_open_ports.txt') as portFileHTML:
-        portAll = portFileHTML.read()
-        if not portAll:
-            portAll = 'n/a'
         dataListHTML.append('<th><div id="show">Open ports:</div></th></tr><td><div id="show">')
         dataListHTML.append(portAll)
         for line in portFileHTML:
+            if not line:
+                line = 'n/a'
             dataListHTML.append("%s<br>\n" % line)
         dataListHTML.append('</div></tr></table></td>')
 
     with open('network_scan_open_ports.txt') as portFileHTML:
-        portAll = portFileHTML.read()
-        if not portAll:
-            portAll = 'n/a'
         dataListHTML.append('<td><table><th><div id="hide">Open ports:</div></th><tr><td><div id="hide">')
         dataListHTML.append(portAll)
         for line in portFileHTML:
+            if not line:
+                line = 'n/a'
             dataListHTML.append("%s<br>\n" % line)
         dataListHTML.append('</div></td></tr></table></td>')
 
