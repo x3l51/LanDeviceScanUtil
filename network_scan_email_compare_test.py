@@ -24,6 +24,7 @@ elif opSys is 'Darwin':
 else:
     print(CRED + "\nCan\'t detect your operating system. Try your luck! [ENTER]\n" + CEND)
 
+# check if py version = 3.6
 if sys.version_info[0] < 3:
     print(CRED + "\nRestart the script using python3.6: 'sudo python3.6 network_scan_email_compare.py\n" + CEND)
     sys.exit(0)
@@ -851,9 +852,9 @@ def sendMail(subject):
                 print('\nNew credentials successfully set.\n')
             else:
                 print(CRED + '\nInvalid input. Starting over.\n' + CEND)
-                sendMail()
+                sendMail(subject) ###
 
-            sendMail()
+            sendMail(subject) ###
 
         elif inpOne in ('n', 'no'):
             print(CRED + '\nF you then.\n' + CEND)
