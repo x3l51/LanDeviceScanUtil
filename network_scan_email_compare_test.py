@@ -82,6 +82,7 @@ dataList = []
 dataListNew = []
 dataListAll = []
 dataListHTML = []
+
 dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charset="utf-8" name="viewport" content="width=device-width, initial-scale=1"/><html lang="EN"><title>NET.SCAN</title><style> \
         * {font-family: calibri, awesome, arial;} \
         .dot_green {height: 10px;width: 10px;background-color: green;border-radius: 50%;display: inline-block;} \
@@ -109,12 +110,29 @@ dataListHTML.append('<html><head><meta http-equiv="refresh" content="300" charse
         th { border: 1px solid #dddddd;text-align: left;padding: 8px;vertical-align: top;} \
         #hide{display: none;} \
         #show{display: inline;}} \
-        </style></head><body style="background-color:#dddddd;"><div class="sticky" id="topHeader"><br>Time: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '<br><br>\n')
+        </style></head><body style="background-color:#dddddd;"><div class="sticky" id="topHeader"><br> \
+        Time: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '<br><br>\n')
 
 dataList.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 dataListNew.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 dataListAll.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n') 
+
+### Send Mail
+stdoutCap = str(subprocess.getoutput("df -P / | awk 'NR==2{print$5}'"))
+stdoutCapStat = ""
+if int(stdoutCap.replace("%", "")) > 85:
+    stdoutCapStat = "CAPACITY WARNING"
+
+stdoutTemp = subprocess.getstatusoutput("vcgencmd measure_temp")
+if stdoutTemp[0] == 0:
+    stdoutTemp = str(stdoutTemp[1].strip("temp=").replace("'C", "°C"))
+else:
+    stdoutTemp = str('n/a')
+stdoutTempStat = ""
+if stdoutTemp != 'n/a' and float(stdoutTemp.replace("°C", "")) > 65:
+    stdoutTempStat = "TEMPERATURE WARNING"
+###
 
 public_ipv4 = requests.get('http://ip.42.pl/raw').text
 hostname = "ip.42.pl"
@@ -252,6 +270,8 @@ if response == 0:
     print('IPv6 public: ' + stdoutdataIP6pub_lo)
     print('IPv6 public: ' + stdoutdataIP6pub_lt + '\n')
     print('Interface: ' + stdoutdataIface + '\n')
+    print('CPU temperature: ' + stdoutTemp + CRED + ' ' + stdoutTempStat + CEND + '\n')
+    print('Disk space in use: ' + stdoutCap + CRED + ' ' + stdoutCapStat + CEND + '\n')
 
     dataList.append('IP Table of ' + stdoutdataName + ':\n')
     dataList.append('IPv4 local: ' + stdoutdataIP4loc)
@@ -260,6 +280,8 @@ if response == 0:
     dataList.append('IPv6 public: ' + stdoutdataIP6pub_lo)
     dataList.append('IPv6 public: ' + stdoutdataIP6pub_lt + '\n')
     dataList.append('Interface: ' + stdoutdataIface + '\n')
+    dataList.append('CPU temperature: ' + stdoutTemp + ' ' + stdoutTempStat)
+    dataList.append('Disk space in use: ' + stdoutCap + ' ' + stdoutCapStat + '\n')
 
     dataListNew.append('IP Table of ' + stdoutdataName + ':\n')
     dataListNew.append('IPv4 local: ' + stdoutdataIP4loc)
@@ -268,6 +290,8 @@ if response == 0:
     dataListNew.append('IPv6 public: ' + stdoutdataIP6pub_lo)
     dataListNew.append('IPv6 public: ' + stdoutdataIP6pub_lt + '\n')
     dataListNew.append('Interface: ' + stdoutdataIface + '\n')
+    dataListNew.append('CPU temperature: ' + stdoutTemp + ' ' + stdoutTempStat)
+    dataListNew.append('Disk space in use: ' + stdoutCap + ' ' + stdoutCapStat + '\n')
 
     dataListAll.append('IP Table of ' + stdoutdataName + ':\n')
     dataListAll.append('IPv4 local: ' + stdoutdataIP4loc)
@@ -276,6 +300,8 @@ if response == 0:
     dataListAll.append('IPv6 public: ' + stdoutdataIP6pub_lo)
     dataListAll.append('IPv6 public: ' + stdoutdataIP6pub_lt + '\n')
     dataListAll.append('Interface: ' + stdoutdataIface + '\n')
+    dataListAll.append('CPU temperature: ' + stdoutTemp + ' ' + stdoutTempStat)
+    dataListAll.append('Disk space in use: ' + stdoutCap + ' ' + stdoutCapStat + '\n')
 
     dataListHTML.append('<td><table><th>IP Table of ' + stdoutdataName + ':</th><tr><td>\n')
     dataListHTML.append('IPv4 local: ' + stdoutdataIP4loc + '<br>')
@@ -283,23 +309,35 @@ if response == 0:
     dataListHTML.append('IPv6 local: ' + stdoutdataIP6loc + '<br>')
     dataListHTML.append('IPv6 public: ' + stdoutdataIP6pub_lo + '<br>')
     dataListHTML.append('IPv6 public: ' + stdoutdataIP6pub_lt + '<br><br>\n')
-    dataListHTML.append('Interface: ' + stdoutdataIface + '<br>\n')
+    dataListHTML.append('Interface: ' + stdoutdataIface + '<br><br>\n')
+    dataListHTML.append('CPU temperature: ' + stdoutTemp + ' <font color="red">' + stdoutTempStat + '</font><br>')
+    dataListHTML.append('Disk space in use: ' + stdoutCap + ' <font color="red">' + stdoutCapStat + '</font><br>\n')
     dataListHTML.append('</tr>')
 
     with open('network_scan_open_ports.txt') as portFileHTML:
+        portAll = portFileHTML.read()
+        if not portAll:
+            portAll = 'n/a'
         dataListHTML.append('<th><div id="show">Open ports:</div></th></tr><td><div id="show">')
+        dataListHTML.append(portAll)
         for line in portFileHTML:
             dataListHTML.append("%s<br>\n" % line)
         dataListHTML.append('</div></tr></table></td>')
 
     with open('network_scan_open_ports.txt') as portFileHTML:
+        portAll = portFileHTML.read()
+        if not portAll:
+            portAll = 'n/a'
         dataListHTML.append('<td><table><th><div id="hide">Open ports:</div></th><tr><td><div id="hide">')
+        dataListHTML.append(portAll)
         for line in portFileHTML:
             dataListHTML.append("%s<br>\n" % line)
         dataListHTML.append('</div></td></tr></table></td>')
 
     with open('network_scan_open_ports.txt') as portFile:
         portAll = portFile.read()
+        if not portAll:
+            portAll = 'n/a'
         dataList.append('Open ports:\n\n' + portAll + '\n')
         dataListNew.append('Open ports:\n\n' + portAll + '\n')
         dataListAll.append('Open ports:\n\n' + portAll + '\n')
@@ -313,13 +351,13 @@ def func():
             data_all = json.load(json_file)
 
             if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
-                subject = "Public IPs have changed - "
+                subject = "Public IPs have changed"
                 sendMail(subject)
             elif stdoutdataIP6pub ==  "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
-                subject = "Public IPv4 has changed - "
+                subject = "Public IPv4 has changed"
                 sendMail(subject)
             elif data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
-                subject = "Public IPv6 has changed - "
+                subject = "Public IPv6 has changed"
                 sendMail(subject)
 
     for i, v in enumerate(data):
@@ -421,8 +459,9 @@ def func():
                 IPv6pub_val = {'IPv6pub': stdoutdataIP6pub}
                 data_all[MAC_get].update(IPv6pub_val)
 
-            NAME_val = {'NAME': NAME_get}
-            data_all[MAC_get].update(NAME_val)
+            if data_all[MAC_get]["NAME"] == 'n/a':
+                NAME_val = {'NAME': NAME_get}
+                data_all[MAC_get].update(NAME_val)
 
             dataList.append('Vendor: ' + VENDOR_get)
             print('Vendor: ' + VENDOR_get)
@@ -477,7 +516,7 @@ def func():
     generateListHTML()
 
     if 'Status: Unknown device.' in dataList:
-        subject = "Unknown device detected - "
+        subject = "Unknown device detected"
         sendMail(subject)
 
 def generateDiagram(): 
@@ -745,8 +784,8 @@ def sendMail(subject):
         msg = MIMEMultipart()
         msg["From"] = emailfrom
         msg["To"] = emailto
-        msg["Subject"] = subject + stdoutdataName + ' ' + timeNowHuman
-        msg.preamble = subject + stdoutdataName + ' ' + timeNowHuman
+        msg["Subject"] = subject + ' - ' + stdoutdataName + ' ' + timeNowHuman
+        msg.preamble = subject + ' - ' + stdoutdataName + ' ' + timeNowHuman
 
         ctype, encoding = mimetypes.guess_type(fileToSend)
         if ctype is None or encoding is not None:
@@ -852,9 +891,9 @@ def sendMail(subject):
                 print('\nNew credentials successfully set.\n')
             else:
                 print(CRED + '\nInvalid input. Starting over.\n' + CEND)
-                sendMail(subject) ###
+                sendMail(subject)
 
-            sendMail(subject) ###
+            sendMail(subject)
 
         elif inpOne in ('n', 'no'):
             print(CRED + '\nF you then.\n' + CEND)
