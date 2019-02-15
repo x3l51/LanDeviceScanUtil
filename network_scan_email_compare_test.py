@@ -168,8 +168,8 @@ if response == 0:
     elif stdoutdataIface.startswith('e'):
         stdoutdataIface = ("Wireless (" + stdoutdataIface + ")")
 
-    stdoutdataMAC = subprocess.getoutput("cat /sys/class/net/*/address | awk 'NR==1{print $1}'")
-    stdoutdataMAC_lt = subprocess.getoutput("cat /sys/class/net/*/address | awk 'NR==2{print $1}'")
+    stdoutdataMAC = subprocess.getoutput("cat /sys/class/net/*/address | awk 'NR==1{print $1}'").upper()
+    stdoutdataMAC_lt = subprocess.getoutput("cat /sys/class/net/*/address | awk 'NR==2{print $1}'").upper()
     if stdoutdataMAC == '00:00:00:00:00:00' and stdoutdataMAC_lt != '':
         stdoutdataMAC = stdoutdataMAC_lt
     stdoutdataMACDiff = stdoutdataMAC[:8].replace(":","-")
@@ -177,7 +177,9 @@ if response == 0:
     try:
         if os.path.exists('/var/lib/ieee-data/oui.txt'):
             if time.time() - os.path.getmtime('/var/lib/ieee-data/oui.txt') > (60 * 60 * 24):
-                subprocess.check_call("sudo wget http://standards-oui.ieee.org/oui.txt --directory-prefix=/var/lib/ieee-data/ > /dev/null 2>&1", shell=True)
+                subprocess.check_call("cd /var/lib/ieee-data/ && sudo rm oui.txt && sudo wget http://standards-oui.ieee.org/oui.txt > /dev/null 2>&1", shell=True)
+            else:
+                subprocess.check_call("cd /var/lib/ieee-data/ && sudo rm oui.txt && sudo wget http://standards-oui.ieee.org/oui.txt > /dev/null 2>&1", shell=True)
         else:
             subprocess.check_call("sudo wget http://standards-oui.ieee.org/oui.txt --directory-prefix=/var/lib/ieee-data/ > /dev/null 2>&1", shell=True)
         stdoutdataVendor = subprocess.getoutput("grep -i \"" + stdoutdataMACDiff + "\" /var/lib/ieee-data/oui.txt | awk '{$1=$2=\"\"; print substr($0,2)}'")
@@ -316,18 +318,22 @@ if response == 0:
 
     with open('network_scan_open_ports.txt') as portFileHTML:
         dataListHTML.append('<th><div id="show">Open ports:</div></th></tr><td><div id="show">')
-        for line in portFileHTML:
-            if not line:
-                line = 'n/a'
+        if os.path.getsize('network_scan_open_ports.txt') == 0:
+            line = 'n/a'
             dataListHTML.append("%s<br>\n" % line)
+        else:
+            for line in portFileHTML:
+                dataListHTML.append("%s<br>\n" % line)
         dataListHTML.append('</div></tr></table></td>')
 
     with open('network_scan_open_ports.txt') as portFileHTML:
         dataListHTML.append('<td><table><th><div id="hide">Open ports:</div></th><tr><td><div id="hide">')
-        for line in portFileHTML:
-            if not line:
-                line = 'n/a'
+        if os.path.getsize('network_scan_open_ports.txt') == 0:
+            line = 'n/a'
             dataListHTML.append("%s<br>\n" % line)
+        else:    
+            for line in portFileHTML:
+                dataListHTML.append("%s<br>\n" % line)
         dataListHTML.append('</div></td></tr></table></td>')
 
     with open('network_scan_open_ports.txt') as portFile:
@@ -557,7 +563,7 @@ def generateDiagram():
                         hours = 1 / 60 * int((time.strftime('%M', time.localtime(fromNow)))) + int(time.strftime('%H', time.localtime(fromNow)))
                         hoursRound = float("{0:.2f}".format(hours))
 
-                        if int(time.strftime('%H', time.localtime(fromNow))) > int(time.strftime('%H', time.localtime(unixtime))):
+                        if time.strftime('%H', time.localtime(tdelta)) != '00' and time.strftime('%H', time.localtime(fromNow)) > time.strftime('%H', time.localtime(unixtime)):
                             days = str(int(time.strftime('%d', time.localtime(tdelta))) + 1)
                         
                         X.append(str("{:02d}".format(int(days))))
@@ -649,6 +655,8 @@ def generateListHTML():
         data_all = json.load(json_file)
 
         data_all_sorted = sorted([*data_all.keys()], key=lambda x: (data_all[x]['SEEN'], data_all[x]['IPv4loc']), reverse=True)
+
+        ### Scan only if online
 
         for i, item in enumerate(data_all_sorted):
             key = item
