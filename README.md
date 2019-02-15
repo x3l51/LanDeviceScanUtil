@@ -3,7 +3,7 @@ Scans the local network for devices in the same IP range as you are.
 
 You'll find a human readable output file named `network_scan_all.txt` and a html fine named `network_scan_all.html`, which you could `cp` via cron into your apache server. It's really beautiful tho!
 
-The script `network_scan_email_compare.py` creates and updates a list with all devices it has ever seen (`network_scan_all.json`). If an unknown device is detected, an email is sent.
+The script `network_scan_email_compare.py` creates and updates a list with all devices it has ever seen (`network_scan_all.json`). If an unknown device is detected, an email is sent. At least it is as long as you put your mail credentials on the first run. Else you can disable email.
 
 
 
@@ -78,9 +78,7 @@ Detailed info on node:
 ```
 
 
-If you want to have an email sent everytime an unknown device is being discovered in the network, do the following:
-
-Run the script as a cronjob every minute or so. To do so, download the script with:
+Run the script as a cronjob every 10 minutes or so. To do so, download the script with:
 
     sudo wget https://raw.githubusercontent.com/x3l51/LanDeviceScanUtil/master/network_scan_email_compare.py
     
@@ -94,7 +92,7 @@ Then type:
     
 Append this at the end of the file to have it run every minute:
 
-    * * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py
+    */10 * * * * cd /filePath/to/yourScript && python3 network_scan_email_compare.py
     
 
 
