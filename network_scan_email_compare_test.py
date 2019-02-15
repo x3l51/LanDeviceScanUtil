@@ -130,7 +130,7 @@ if stdoutTemp[0] == 0:
 else:
     stdoutTemp = str('n/a')
 stdoutTempStat = ""
-if stdoutTemp != 'n/a' and float(stdoutTemp.replace("°C", "")) > 65:
+if stdoutTemp != 'n/a' and float(stdoutTemp.replace("°C", "")) > 60:
     stdoutTempStat = "TEMPERATURE WARNING"
 ###
 
