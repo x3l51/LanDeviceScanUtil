@@ -163,22 +163,16 @@ if response == 0:
         stdoutdataIP6pub = "n/a"
     stdoutdataIface = subprocess.getoutput("route | grep '^default' | grep -o '[^ ]*$'")
 
-import subprocess
-stdoutdataGatewayRoute = subprocess.getoutput("route -n | awk 'NR==3{print$2}'")
-print(stdoutdataGatewayRoute)
-stdoutdataGatewayIP = subprocess.getoutput("ip r | grep \"default via\" | awk '{print$3}'")
-print(stdoutdataGatewayIP)
-if stdoutdataGatewayRoute == stdoutdataGatewayIP:
-    stdoutdataGateway = stdoutdataGatewayIP
-elif stdoutdataGatewayRoute != "0.0.0.0":
-    stdoutdataGateway = stdoutdataGatewayRoute
-elif stdoutdataGatewayIP != "0.0.0.0":
-    stdoutdataGateway = stdoutdataGatewayIP
-else:
+    stdoutdataGatewayRoute = subprocess.getoutput("route -n | awk 'NR==3{print$2}'")
+    stdoutdataGatewayIP = subprocess.getoutput("ip r | grep \"default via\" | awk '{print$3}'")
+    if stdoutdataGatewayRoute == stdoutdataGatewayIP:
+        stdoutdataGateway = stdoutdataGatewayIP
+    elif stdoutdataGatewayRoute != "0.0.0.0":
+        stdoutdataGateway = stdoutdataGatewayRoute
+    elif stdoutdataGatewayIP != "0.0.0.0":
+        stdoutdataGateway = stdoutdataGatewayIP
+    else:
     stdoutdataGateway = 'n/a'
-
-    
-print(stdoutdataGateway)
 
     if stdoutdataIface.startswith('e'):
         stdoutdataIface = ("Ethernet (" + stdoutdataIface + ")")
