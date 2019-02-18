@@ -172,7 +172,7 @@ if response == 0:
     elif stdoutdataGatewayIP != "0.0.0.0":
         stdoutdataGateway = stdoutdataGatewayIP
     else:
-    stdoutdataGateway = 'n/a'
+        stdoutdataGateway = 'n/a'
 
     if stdoutdataIface.startswith('e'):
         stdoutdataIface = ("Ethernet (" + stdoutdataIface + ")")
