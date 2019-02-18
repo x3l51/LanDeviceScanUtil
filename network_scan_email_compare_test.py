@@ -688,8 +688,11 @@ def generateListHTML():
             progbar(i, z, 20)
 
             key_NAME = (data_all[key]["NAME"])
-            key_NAME_raw = (data_all[key]["NAME"])
             key_IPv4loc = (data_all[key]["IPv4loc"])
+            if key_IPv4loc == stdoutdataGateway:
+                key_NAME_raw = (data_all[key]["NAME"]) + ' (Gateway)'
+            else:
+                key_NAME_raw = (data_all[key]["NAME"])
             key_MAC = (data_all[key]["MAC"])
             key_VENDOR = (data_all[key]["VENDOR"])
             key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
