@@ -56,7 +56,7 @@ except ImportError:
     # if not install python3.6
     subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
     subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo apt-get install build-essential checkinstall libssl-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo apt-get install net-tools build-essential checkinstall libssl-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3.6 -m pip install --upgrade pip > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-nmap -y > {}".format(os.devnull), shell=True)
@@ -118,7 +118,7 @@ dataListNew.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 dataListAll.append('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n')
 print('\nTime: ' + date.strftime('%Y-%m-%d %H:%M:%S') + '\n') 
 
-### Send Mail
+### Send Mail?
 stdoutCap = str(subprocess.getoutput("df -P / | awk 'NR==2{print$5}'"))
 stdoutCapStat = ""
 if int(stdoutCap.replace("%", "")) > 85:
@@ -162,6 +162,23 @@ if response == 0:
         stdoutdataIP6pub_lo = "n/a"
         stdoutdataIP6pub = "n/a"
     stdoutdataIface = subprocess.getoutput("route | grep '^default' | grep -o '[^ ]*$'")
+
+import subprocess
+stdoutdataGatewayRoute = subprocess.getoutput("route -n | awk 'NR==3{print$2}'")
+print(stdoutdataGatewayRoute)
+stdoutdataGatewayIP = subprocess.getoutput("ip r | grep \"default via\" | awk '{print$3}'")
+print(stdoutdataGatewayIP)
+if stdoutdataGatewayRoute == stdoutdataGatewayIP:
+    stdoutdataGateway = stdoutdataGatewayIP
+elif stdoutdataGatewayRoute != "0.0.0.0":
+    stdoutdataGateway = stdoutdataGatewayRoute
+elif stdoutdataGatewayIP != "0.0.0.0":
+    stdoutdataGateway = stdoutdataGatewayIP
+else:
+    stdoutdataGateway = 'n/a'
+
+    
+print(stdoutdataGateway)
 
     if stdoutdataIface.startswith('e'):
         stdoutdataIface = ("Ethernet (" + stdoutdataIface + ")")
@@ -348,6 +365,7 @@ if response == 0:
 doc = minidom.parse('network_scan_online.log')
 data = doc.getElementsByTagName('host')
 
+# Main function
 def func():
     with open('network_scan_all.json') as json_file:
             data_all = json.load(json_file)
@@ -513,15 +531,17 @@ def func():
         for item in dataList:
             readable.write("%s\n" % item)
 
-    generateDiagram()
-    generateListAll()
-    generateListHTML()
-
     if 'Status: Unknown device.' in dataList:
         subject = "Unknown device detected"
         sendMail(subject)
 
-def generateDiagram(): 
+    generateListAll()
+    generateDiagramStatistic()
+    generateDiagram()
+    generateListHTML()
+
+# Log timestamps of every device online
+def generateDiagramStatistic(): 
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
         for item in data_all:
@@ -537,6 +557,10 @@ def generateDiagram():
                 with open('./log/statistic.json', 'w') as outfile:
                     json.dump(logData, outfile, sort_keys=False, indent=4)
 
+# Create diagrams of log statistics
+def generateDiagram(): 
+    with open('network_scan_all.json') as json_file:
+        data_all = json.load(json_file)
         with open('./log/statistic.json') as json_file:
             logData = json.load(json_file)
             for item in logData:
@@ -607,6 +631,7 @@ def generateDiagram():
                 plt.savefig("./log/" + key + "_1_month.png", dpi=300)
                 plt.close()
 
+# Generate human readable list of all devices
 def generateListAll():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
@@ -645,11 +670,13 @@ def generateListAll():
         for item in dataListAll:
             readableList.write("%s\n" % item)
 
+# Def the progressbar
 def progbar(curr, total, full_progbar):
     frac = curr/total
     filled_progbar = round(frac*full_progbar)
     print('\r', '#'*filled_progbar + '-'*(full_progbar-filled_progbar), '[{:>7.2%}]'.format(frac), end='')
 
+# Generate the HTML
 def generateListHTML():
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
@@ -766,6 +793,7 @@ def generateListHTML():
         for item in dataListHTML:
             readableList.write("%s\n" % item)
 
+# Send mail
 def sendMail(subject):
     secret_key = "{: <32}".format(stdoutdataMAC).encode("utf-8")
     cipher = AES.new(secret_key,AES.MODE_ECB)
