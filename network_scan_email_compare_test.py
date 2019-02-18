@@ -236,6 +236,8 @@ if response == 0:
 
     with open('network_scan_info.log') as infoFile:
         infoAll = infoFile.read()
+        if os.path.getsize('network_scan_info.log') == 0:
+            infoAll = 'n/a'
 
     if os.path.exists('network_scan_open_ports.txt'):
         if time.time() - os.path.getmtime('network_scan_open_ports.txt') > (60 * 60):
@@ -513,7 +515,7 @@ def func():
             with open('network_scan_all.json', 'w') as outfile:
                 json.dump(data_all, outfile, sort_keys=False, indent=4)
 
-    dataListNew.append('Detailed info on node:\n\n' + infoAll + '\n')
+    dataListNew.append('Detailed info on node:\n\n' +  + '\n')
     dataList.append('Detailed info on node:\n\n' + infoAll + '\n')
     print('\nDetailed info on node:\n\n' + infoAll + '\n')
 
