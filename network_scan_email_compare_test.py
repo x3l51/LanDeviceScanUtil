@@ -268,12 +268,6 @@ if response == 0:
         with open('network_scan_all.json', 'w') as outfile:
             outfile.write(dummyData)
 
-    if not os.path.exists('./log/statistic.json'):
-        subprocess.check_call("sudo mkdir ./log > /dev/null 2>&1", shell=True)
-        dummyDataStat = "{\"" + stdoutdataMAC + "\": [" + unixtimeStr + "]}"
-        with open('./log/statistic.json', 'w') as outfileStat:
-            outfileStat.write(dummyDataStat)
-
     dataListHTML.append('</div><div class="content"><table><tr>')
 
     print('IP Table of ' + stdoutdataName + ':\n')
@@ -429,6 +423,8 @@ def func():
                     NAME_get = stdoutdataArpName
         except:
             NAME_get = ('n/a')
+        if IPv4loc_get == stdoutdataGateway:
+            NAME_get = NAME_get + ' (Gateway)'
 
         try:
             VENDOR_get = items[1].attributes['vendor'].value
@@ -536,6 +532,12 @@ def func():
 
 # Log timestamps of every device online
 def generateDiagramStatistic(): 
+    if not os.path.exists('./log/statistic.json'):
+        if not os.path.exists('./log'):
+            subprocess.check_call("sudo mkdir ./log > /dev/null 2>&1", shell=True)
+        dummyDataStat = "{\"" + stdoutdataMAC + "\": [" + unixtimeStr + "]}"
+        with open('./log/statistic.json', 'w') as outfileStat:
+            outfileStat.write(dummyDataStat)
     with open('network_scan_all.json') as json_file:
         data_all = json.load(json_file)
         for item in data_all:
