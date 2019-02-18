@@ -515,7 +515,7 @@ def func():
             with open('network_scan_all.json', 'w') as outfile:
                 json.dump(data_all, outfile, sort_keys=False, indent=4)
 
-    dataListNew.append('Detailed info on node:\n\n' +  + '\n')
+    dataListNew.append('Detailed info on node:\n\n' + infoAll + '\n')
     dataList.append('Detailed info on node:\n\n' + infoAll + '\n')
     print('\nDetailed info on node:\n\n' + infoAll + '\n')
 
