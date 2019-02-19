@@ -189,8 +189,6 @@ if response == 0:
         if os.path.exists('/var/lib/ieee-data/oui.txt'):
             if time.time() - os.path.getmtime('/var/lib/ieee-data/oui.txt') > (60 * 60 * 24):
                 subprocess.check_call("cd /var/lib/ieee-data/ && sudo rm oui.txt && sudo wget http://standards-oui.ieee.org/oui.txt > /dev/null 2>&1", shell=True)
-            else:
-                subprocess.check_call("cd /var/lib/ieee-data/ && sudo rm oui.txt && sudo wget http://standards-oui.ieee.org/oui.txt > /dev/null 2>&1", shell=True)
         else:
             subprocess.check_call("sudo wget http://standards-oui.ieee.org/oui.txt --directory-prefix=/var/lib/ieee-data/ > /dev/null 2>&1", shell=True)
         stdoutdataVendor = subprocess.getoutput("grep -i \"" + stdoutdataMACDiff + "\" /var/lib/ieee-data/oui.txt | awk '{$1=$2=\"\"; print substr($0,2)}'")
@@ -199,10 +197,9 @@ if response == 0:
     except:
         stdoutdataVendor = "n/a"
 
-    try:
-        if sys.argv[1]:
-            scanRange = sys.argv[1]
-    except:
+    if len(sys.argv) > 1 and sys.argv[1] != 'email':
+        scanRange = sys.argv[1]
+    else:
         scanRange = (subprocess.getoutput("ifconfig | grep inet | grep -v 127.0.0.1 | grep -v ::1 | awk 'NR==1{print $2}' | cut -d: -f2 | cut -d. -f -3") + ".*")
 
     subprocess.check_call("sudo nmap -sP -sn -oX network_scan_online.log " + scanRange + " > /dev/null 2>&1", shell=True)
@@ -934,5 +931,20 @@ def sendMail(subject):
         else:
             print(CRED + '\nWrong input.\n' + CEND)
             sys.exit(0)
+
+if len(sys.argv) > 1 and sys.argv[1] == 'email':
+    subject = sys.argv[2:]
+    subject = ' '.join(subject)
+    sendMail(subject)
+    sys.exit(0)
+
+try:
+    if sys.argv[1] == 'email':
+        subject = sys.argv[2:]
+        subject = ' '.join(subject)
+        sendMail(subject)
+        sys.exit(0)
+except:
+    pass
 
 func()
