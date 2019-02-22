@@ -1,4 +1,4 @@
-# !/usr/bin/env python3.6
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # network_scan_email_compare.py
 
@@ -44,6 +44,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from xml.dom import minidom
+from optparse import OptionParser
 
 try:
     import requests
@@ -56,10 +57,8 @@ except ImportError:
     # if not install python3.6
     subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
     subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo apt-get install net-tools build-essential checkinstall libssl-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
+    subprocess.call("sudo apt-get install libffi-dev python3-dev net-tools build-essential checkinstall libssl-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python3-pip python3-nmap -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3.6 -m pip install --upgrade pip > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H apt-get install python3-nmap -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3.6 -m pip install nmap > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3.6 -m pip install requests > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H python3.6 -m pip install pyCrypto > {}".format(os.devnull), shell=True)
@@ -71,6 +70,47 @@ if not os.path.exists('/usr/bin/nmblookup'):
     subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
     subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
+
+###
+parser = OptionParser(usage="%prog [OPTIONS]", version="%prog 1.0")
+
+parser.add_option("-s", "--scanRange", default=False,
+                help="Set a scan range or ip that should be scanned for\n \
+                Use with `-s 192.168.0.*/24` or `-s 192.168.0.81`\
+                Default scans for the IP range the device is in")
+
+parser.add_option("-w", "--website", action="store_true", default=False,
+                help="Generate a simple HTML website with the generated data \
+                Set a custom path where the HTML should be copied to with \
+                `-w /absolute/or/relative/path` \
+                With `-w`, `-d` defaults to `True`")
+
+parser.add_option("-d", "--diagram", action="store_true", default=False, 
+                help="Generate diagrams for every device for the website")
+
+parser.add_option("-e", "--email",  action="store_true", default=False,
+                help="Send email if unknown device is detected \
+                Use with `-e` to send mail if unknown device detected \
+                Use with `-e SUBJECT GOES HERE` to send an email anyway \
+                With the latter, the script only sends the mail and \
+                doesn't scan anything and doesn't generate anything")
+
+(options, args) = parser.parse_args()
+
+if options.website:
+    options.diagram = True
+    z = len(args)
+    for i in range(0,z):
+        if (args[i]).startswith(('/', './', '../'), 0):
+            if not os.path.exists(args[i]):
+                print('\n' + CRED + 'The path "' + args[i] + '" doesn\'t seem to exist.' + CEND + '\n')
+            else:
+                websitePath = (args[i])
+            del args[i]
+            break
+
+argsParsed = ' '.join(args)
+###
 
 unixtime = time.time()
 unixtimeStr = str(unixtime)
@@ -126,11 +166,11 @@ if int(stdoutCap.replace("%", "")) > 85:
 
 stdoutTemp = subprocess.getstatusoutput("vcgencmd measure_temp")
 if stdoutTemp[0] == 0:
-    stdoutTemp = str(stdoutTemp[1].strip("temp=").replace("'C", "°C"))
+    stdoutTemp = str(stdoutTemp[1].strip("temp=").replace("'C", " C"))
 else:
     stdoutTemp = str('n/a')
 stdoutTempStat = ""
-if stdoutTemp != 'n/a' and float(stdoutTemp.replace("°C", "")) > 60:
+if stdoutTemp != 'n/a' and float(stdoutTemp.replace(" C", "")) > 60:
     stdoutTempStat = "TEMPERATURE WARNING"
 ###
 
@@ -186,7 +226,7 @@ if response == 0:
     stdoutdataMACDiff = stdoutdataMAC[:8].replace(":","-")
 
     try:
-        if os.path.exists('/var/lib/ieee-data/oui.txt'):
+        if os.path.exists('/var/lib/ieee-data/oui.txt') and os.path.getsize('/var/lib/ieee-data/oui.txt') != 0:
             if time.time() - os.path.getmtime('/var/lib/ieee-data/oui.txt') > (60 * 60 * 24):
                 subprocess.check_call("cd /var/lib/ieee-data/ && sudo rm oui.txt && sudo wget http://standards-oui.ieee.org/oui.txt > /dev/null 2>&1", shell=True)
         else:
@@ -197,8 +237,8 @@ if response == 0:
     except:
         stdoutdataVendor = "n/a"
 
-    if len(sys.argv) > 1 and sys.argv[1] != 'email':
-        scanRange = sys.argv[1]
+    if options.scanRange:
+        scanRange = options.scanRange
     else:
         scanRange = (subprocess.getoutput("ifconfig | grep inet | grep -v 127.0.0.1 | grep -v ::1 | awk 'NR==1{print $2}' | cut -d: -f2 | cut -d. -f -3") + ".*")
 
@@ -207,7 +247,7 @@ if response == 0:
     hostsOnlineStr = subprocess.getoutput("sudo nmap -sn " + scanRange + " | grep \"hosts up)\" | cut -d\( -f2 | awk '{print$1}'")
     hostsOnline = int(hostsOnlineStr)
 
-    if os.path.exists('network_scan_info.log'):
+    if os.path.exists('network_scan_info.log') and os.path.getsize('network_scan_info.log') != 0:
         if time.time() - os.path.getmtime('network_scan_info.log') > (60 * 60):
             if stdoutdataIP6pub in (None, '', 'n/a'):
                 subprocess.check_call("sudo nmap -F -A --host-timeout 20 -oN network_scan_info.log " + public_ipv4 + " > /dev/null 2>&1", shell=True)
@@ -236,7 +276,7 @@ if response == 0:
         if os.path.getsize('network_scan_info.log') == 0:
             infoAll = 'n/a'
 
-    if os.path.exists('network_scan_open_ports.txt'):
+    if os.path.exists('network_scan_open_ports.txt') and os.path.getsize('network_scan_open_ports.txt') != 0:
         if time.time() - os.path.getmtime('network_scan_open_ports.txt') > (60 * 60):
             if stdoutdataIP6pub in (None, '', 'n/a'):
                 subprocess.check_call("sudo nmap -F " + public_ipv4 + " | grep open > network_scan_open_ports.txt || true", shell=True)
@@ -260,7 +300,7 @@ if response == 0:
             if stdoutdataIP6pub_lt not in (None, '', 'n/a'):
                 subprocess.check_call("sudo nmap -6 -F " + stdoutdataIP6pub_lt + " | grep open >> network_scan_open_ports.txt || true", shell=True)
 
-    if not os.path.exists('network_scan_all.json'):
+    if not os.path.exists('network_scan_all.json') or os.path.getsize('network_scan_open_ports.txt') == 0:
         dummyData = "{\"" + stdoutdataMAC + "\": {\"FIRST_SEEN\": \"" + timeNow + "\",\"IPv4loc\": \"" + stdoutdataIP4loc + "\",\"IPv4pub\": \"" + public_ipv4 + "\", \
         \"IPv6loc\": \"" + stdoutdataIP6loc + "\",\"IPv6pub\": \"" + stdoutdataIP6pub + "\",\"MAC\": \"" + stdoutdataMAC + "\", \
         \"NAME\": \"" + stdoutdataName + "\",\"SEEN\": \"" + timeNow + "\",\"VENDOR\": \"" + stdoutdataVendor + "\"}}"
@@ -357,15 +397,16 @@ def func():
     with open('network_scan_all.json') as json_file:
             data_all = json.load(json_file)
 
-            if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
-                subject = "Public IPs have changed"
-                sendMail(subject)
-            elif stdoutdataIP6pub ==  "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
-                subject = "Public IPv4 has changed"
-                sendMail(subject)
-            elif data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
-                subject = "Public IPv6 has changed"
-                sendMail(subject)
+            if options.email:
+                if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                    subject = "Public IPs have changed"
+                    sendMail(subject)
+                elif stdoutdataIP6pub ==  "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
+                    subject = "Public IPv4 has changed"
+                    sendMail(subject)
+                elif data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                    subject = "Public IPv6 has changed"
+                    sendMail(subject)
 
     for i, v in enumerate(data):
         progbar(i, hostsOnline, 20)
@@ -520,18 +561,22 @@ def func():
         for item in dataList:
             readable.write("%s\n" % item)
 
-    if 'Status: Unknown device.' in dataList:
-        subject = "Unknown device detected"
-        sendMail(subject)
+    if options.email:
+        if 'Status: Unknown device.' in dataList:
+            subject = "Unknown device detected"
+            sendMail(subject)
 
     generateListAll()
     generateDiagramStatistic()
-    generateDiagram()
-    generateListHTML()
+    
+    if options.diagram:
+        generateDiagram()
+    if options.website:
+        generateListHTML()
 
 # Log timestamps of every device online
 def generateDiagramStatistic(): 
-    if not os.path.exists('./log/statistic.json'):
+    if not os.path.exists('./log/statistic.json') or os.path.getsize('./log/statistic.json') == 0:
         if not os.path.exists('./log'):
             subprocess.check_call("sudo mkdir ./log > /dev/null 2>&1", shell=True)
         dummyDataStat = "{\"" + stdoutdataMAC + "\": [" + unixtimeStr + "]}"
@@ -563,7 +608,6 @@ def generateDiagram():
                 X = []
                 Y = []
                 labelsx = []
-                labelsxWD = []
                 labelsy = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00']
                 data = logData[key]
                 dateNow = str(date.strftime('%Y-%m-%d'))
@@ -572,26 +616,26 @@ def generateDiagram():
                     tdelta = unixtime - item
                     fromNow = unixtime - tdelta
 
-                    if time.strftime('%m', time.localtime(tdelta)) != '01' or time.strftime('%d', time.localtime(tdelta)) > '07':
-                        X = ['-01']
-                        Y = [-1]
-                        plt.text(3, 12, 'NO DATA TO PLOT FOR THIS TIME PERIOD', horizontalalignment='center', verticalalignment='center')
+                    days = str(time.strftime('%d', time.localtime(tdelta)))
+                    hours = 1 / 60 * int((time.strftime('%M', time.localtime(fromNow)))) + int(time.strftime('%H', time.localtime(fromNow)))
+                    hoursRound = float("{0:.2f}".format(hours))
 
-                    else:
-                        days = str(time.strftime('%d', time.localtime(tdelta)))
-                        hours = 1 / 60 * int((time.strftime('%M', time.localtime(fromNow)))) + int(time.strftime('%H', time.localtime(fromNow)))
-                        hoursRound = float("{0:.2f}".format(hours))
-
-                        if time.strftime('%H', time.localtime(tdelta)) != '00' and time.strftime('%H', time.localtime(fromNow)) > time.strftime('%H', time.localtime(unixtime)):
-                            days = str(int(time.strftime('%d', time.localtime(tdelta))) + 1)
-                        
-                        X.append(str("{:02d}".format(int(days))))
-                        Y.append(hoursRound)
+                    if time.strftime('%H', time.localtime(tdelta)) != '00' and time.strftime('%H', time.localtime(fromNow)) > time.strftime('%H', time.localtime(unixtime)):
+                        days = str(int(time.strftime('%d', time.localtime(tdelta))) + 1)
+                    
+                    X.append(str("{:02d}".format(int(days))))
+                    Y.append(hoursRound)
 
                 for i in range(0, 31):
                     dateDelta = datetime.timedelta(days = i)
                     dateNow = date - dateDelta
                     labelsx.append(str(dateNow.strftime('%A'))[0:3] + ' ' + str(dateNow.strftime('%d. %b %y')))
+
+                # if time.strftime('%m', time.localtime(tdelta)) != '01' or time.strftime('%d', time.localtime(tdelta)) > '07':
+                if "{:02d}".format(int(min(X))) > '07':
+                    X = ['-01']
+                    Y = [-1]
+                    plt.text(3, 12, 'NO DATA TO PLOT FOR THIS TIME PERIOD', horizontalalignment='center', verticalalignment='center')
 
                 X.reverse()
                 Y.reverse()
@@ -606,7 +650,17 @@ def generateDiagram():
                         X.insert(index, str("{:02d}".format(i)))
                         Y.insert(index, -1)
 
-                plt.scatter(X,Y,s=8, color='blue')
+                ###
+                plt.scatter(X,Y,s=6, color='blue')
+                V = []
+                W = []
+                hoursRound = float("{0:.2f}".format(1 / 60 * int((time.strftime('%M', time.localtime(unixtime)))) + int(time.strftime('%H', time.localtime(unixtime)))))
+                V.insert(0, str("{:02d}".format(int(1))))
+                W.insert(0, hoursRound)
+                plt.scatter(V,W,s=10, color='lightgreen')
+                ###
+
+                #plt.scatter(X,Y,s=10, color='lightgreen')
                 plt.xlim(-0.3,6.3)
                 plt.ylim(-0.5,24.5)
                 plt.xticks(np.arange(7), labelsx, rotation=20)
@@ -616,7 +670,17 @@ def generateDiagram():
                 plt.savefig("./log/" + key + "_7_days.png", dpi=300)
                 plt.close()
 
-                plt.scatter(X,Y,s=8, color='blue')
+                ###
+                plt.scatter(X,Y,s=6, color='blue')
+                V = []
+                W = []
+                hoursRound = float("{0:.2f}".format(1 / 60 * int((time.strftime('%M', time.localtime(unixtime)))) + int(time.strftime('%H', time.localtime(unixtime)))))
+                V.insert(0, str("{:02d}".format(int(1))))
+                W.insert(0, hoursRound)
+                plt.scatter(V,W,s=10, color='lightgreen')
+                ###
+
+                #plt.scatter(X,Y,s=8, color='blue')
                 plt.xlim(-0.3,30.3)
                 plt.ylim(-0.5,24.5)
                 plt.xticks(np.arange(31), labelsx, rotation=90)
@@ -686,10 +750,7 @@ def generateListHTML():
 
             key_NAME = (data_all[key]["NAME"])
             key_IPv4loc = (data_all[key]["IPv4loc"])
-            if key_IPv4loc == stdoutdataGateway:
-                key_NAME_raw = (data_all[key]["NAME"]) + ' (Gateway)'
-            else:
-                key_NAME_raw = (data_all[key]["NAME"])
+            key_NAME_raw = (data_all[key]["NAME"])
             key_MAC = (data_all[key]["MAC"])
             key_VENDOR = (data_all[key]["VENDOR"])
             key_FIRST_SEEN = (data_all[key]["FIRST_SEEN"])
@@ -791,6 +852,8 @@ def generateListHTML():
         for item in dataListHTML:
             readableList.write("%s\n" % item)
 
+    subprocess.call("sudo cp network_scan_all.html " + websitePath + " && cp -r log/ " + websitePath + " > {}".format(os.devnull), shell=True)
+
 # Send mail
 def sendMail(subject):
     secret_key = "{: <32}".format(stdoutdataMAC).encode("utf-8")
@@ -809,7 +872,10 @@ def sendMail(subject):
         decodedpassword = cipher.decrypt(base64.b64decode(password))
         password = decodedpassword.decode('utf8').strip()
 
-        fileToSend = "network_scan_all.txt"
+        if os.path.exists('network_scan_all.txt'):
+            fileToSend = "network_scan_all.txt"
+        else:
+            fileToSend = "network_scan_info.log"
 
         msg = MIMEMultipart()
         msg["From"] = emailfrom
@@ -932,19 +998,9 @@ def sendMail(subject):
             print(CRED + '\nWrong input.\n' + CEND)
             sys.exit(0)
 
-if len(sys.argv) > 1 and sys.argv[1] == 'email':
-    subject = sys.argv[2:]
-    subject = ' '.join(subject)
+if options.email and argsParsed:
+    subject = argsParsed
     sendMail(subject)
     sys.exit(0)
-
-try:
-    if sys.argv[1] == 'email':
-        subject = sys.argv[2:]
-        subject = ' '.join(subject)
-        sendMail(subject)
-        sys.exit(0)
-except:
-    pass
 
 func()
