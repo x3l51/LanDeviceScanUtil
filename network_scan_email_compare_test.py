@@ -110,13 +110,16 @@ parser.add_option("-e", "--email",  action="store_true", default=False,
 
 if options.website:
     options.diagram = True
+    websitePath = ""
     z = len(args)
     for i in range(0,z):
         if (args[i]).startswith(('/', './', '../'), 0):
-            if not os.path.exists(args[i]):
+            if not os.path.exists(args[i]) or not os.path.isdir(args[i]):
                 print('\n' + CRED + 'The path "' + args[i] + '" doesn\'t seem to exist.' + CEND + '\n')
             else:
                 websitePath = (args[i])
+                if not websitePath.endswith('/'):
+                    websitePath = websitePath + '/'
             del args[i]
             break
 
@@ -856,7 +859,8 @@ def generateListHTML():
         for item in dataListHTML:
             readableList.write("%s\n" % item)
 
-    subprocess.call("sudo cp network_scan_all.html " + websitePath + " && cp -r log/ " + websitePath + " > {}".format(os.devnull), shell=True)
+    if websitePath:
+        subprocess.call("cd ./ && sudo cp network_scan_all.html " + websitePath + "index.html && sudo cp -r log/ " + websitePath + " > {}".format(os.devnull), shell=True)
 
 # Send mail
 def sendMail(subject):
