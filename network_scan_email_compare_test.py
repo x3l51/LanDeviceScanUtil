@@ -5,10 +5,11 @@
 import sys
 import os
 import platform
-#import pdb ###
+#import pdb
 #pdb.set_trace()
 
 CRED = '\033[91m'
+CGREEN = '\033[92m'
 CEND = '\033[0m'
 
 opSys = platform.system()
@@ -24,9 +25,8 @@ elif opSys is 'Darwin':
 else:
     print(CRED + "\nCan\'t detect your operating system. Try your luck! [ENTER]\n" + CEND)
 
-# check if py version = 3.6
-if sys.version_info[0] < 3:
-    print(CRED + "\nRestart the script using python3.6: 'sudo python3.6 network_scan_email_compare.py\n" + CEND)
+if float(sys.version[:3]) < 3.6:
+    print(CRED + "\nRestart the script using at least python3.6: 'sudo python3.6 network_scan_email_compare.py'\n" + CEND)
     sys.exit(0)
 
 import time
@@ -53,25 +53,36 @@ try:
     import numpy as np
     from Crypto.Cipher import AES
 except ImportError:
-    # check if python3 is python3.6
-    # if not install python3.6
-    subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo apt-get install libffi-dev python3-dev net-tools build-essential checkinstall libssl-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python3-pip python3-nmap -y > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H python3.6 -m pip install --upgrade pip > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H python3.6 -m pip install nmap > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H python3.6 -m pip install requests > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H python3.6 -m pip install pyCrypto > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H python3.6 -m pip install matplotlib > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo apt-get install python3-tk -y > {}".format(os.devnull), shell=True)
+    inpInstallMod = input("\n" + CRED + "Some modules are missing." + CEND + " Shall they be installed automatically? (y/n) ")
+    if inpInstallMod.lower() in ('y', 'yes'):
+        print("Installing will take a few minutes. Be patient.")
+        subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo apt-get install libffi-dev python3-dev net-tools build-essential checkinstall libssl-dev libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python3-pip python3-nmap -y > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo -H python3.6 -m pip install --upgrade pip > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo -H python3.6 -m pip install nmap > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo -H python3.6 -m pip install requests > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo -H python3.6 -m pip install pyCrypto > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo apt-get install python3-tk -y > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo apt-get install git -y && sudo git clone https://github.com/matplotlib/matplotlib && cd matplotlib && sudo python3.6 setup.py build && sudo python3.6 setup.py install > {}".format(os.devnull), shell=True)
+        print("\n" + CGREEN + "Installing complete. Now restarting." + CEND + "\n")
+        os.execv(sys.executable, ['python3.6'] + sys.argv)
+    else:
+        print("\n" + CRED + "Modules missing. Exiting now." + CEND + "\n")
 
 if not os.path.exists('/usr/bin/nmblookup'):
-    subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
-    subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
+    inpInstallProg = input("\n" + CRED + "A program is missing." + CEND + " Shall it be installed automatically? (y/n) ")
+    if inpInstallProg.lower() in ('y', 'yes'):
+        print("Installing will take a few minutes. Be patient.")
+        subprocess.call("sudo rm /var/lib/dpkg/lock && sudo dpkg --configure -a > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo apt-get update > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo -H apt-get install python3-pip -y > {}".format(os.devnull), shell=True)
+        subprocess.call("sudo -H apt-get install samba-common-bin -y > {}".format(os.devnull), shell=True)
+        print("\n" + "CGREEN + Installing complete. Now restarting." + CEND + "\n")
+        os.execv(sys.executable, ['python3.6'] + sys.argv)
+    else:
+        print("\n" + CRED + "Program missing. Exiting now." + CEND + "\n")
 
-###
 parser = OptionParser(usage="%prog [OPTIONS]", version="%prog 1.0")
 
 parser.add_option("-s", "--scanRange", default=False,
@@ -110,7 +121,6 @@ if options.website:
             break
 
 argsParsed = ' '.join(args)
-###
 
 unixtime = time.time()
 unixtimeStr = str(unixtime)
@@ -650,7 +660,6 @@ def generateDiagram():
                         X.insert(index, str("{:02d}".format(i)))
                         Y.insert(index, -1)
 
-                ###
                 plt.scatter(X,Y,s=6, color='blue')
                 V = []
                 W = []
@@ -658,9 +667,7 @@ def generateDiagram():
                 V.insert(0, str("{:02d}".format(int(1))))
                 W.insert(0, hoursRound)
                 plt.scatter(V,W,s=10, color='lightgreen')
-                ###
 
-                #plt.scatter(X,Y,s=10, color='lightgreen')
                 plt.xlim(-0.3,6.3)
                 plt.ylim(-0.5,24.5)
                 plt.xticks(np.arange(7), labelsx, rotation=20)
@@ -670,7 +677,6 @@ def generateDiagram():
                 plt.savefig("./log/" + key + "_7_days.png", dpi=300)
                 plt.close()
 
-                ###
                 plt.scatter(X,Y,s=6, color='blue')
                 V = []
                 W = []
@@ -678,9 +684,7 @@ def generateDiagram():
                 V.insert(0, str("{:02d}".format(int(1))))
                 W.insert(0, hoursRound)
                 plt.scatter(V,W,s=10, color='lightgreen')
-                ###
 
-                #plt.scatter(X,Y,s=8, color='blue')
                 plt.xlim(-0.3,30.3)
                 plt.ylim(-0.5,24.5)
                 plt.xticks(np.arange(31), labelsx, rotation=90)
