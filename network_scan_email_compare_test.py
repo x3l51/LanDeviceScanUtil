@@ -411,13 +411,13 @@ def func():
             data_all = json.load(json_file)
 
             if options.email:
-                if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
                     subject = "Public IPs have changed"
                     sendMail(subject)
                 elif stdoutdataIP6pub ==  "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
                     subject = "Public IPv4 has changed"
                     sendMail(subject)
-                elif data_all[stdoutdataMAC]["IPv6pub"][:37] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
+                elif data_all[stdoutdataMAC]["IPv6pub"] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
                     subject = "Public IPv6 has changed"
                     sendMail(subject)
 
