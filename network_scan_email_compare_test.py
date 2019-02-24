@@ -52,7 +52,7 @@ try:
     import matplotlib.pyplot as plt
     import numpy as np
     from Crypto.Cipher import AES
-except ImportError:
+except ImportError as error:
     inpInstallMod = input("\n" + CRED + "Some modules are missing." + CEND + " Shall they be installed automatically? (y/n) ")
     if inpInstallMod.lower() in ('y', 'yes'):
         print("Installing will take a few minutes. Be patient.")
@@ -68,7 +68,17 @@ except ImportError:
         print("\n" + CGREEN + "Installing complete. Now restarting." + CEND + "\n")
         os.execv(sys.executable, ['python3.6'] + sys.argv)
     else:
+        print("\n" + CRED + "Modules missing. Error message:" + CEND + "\n")
+        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno) + ' (' + type(error).__name__ + ')')
+        print(error)
         print("\n" + CRED + "Modules missing. Exiting now." + CEND + "\n")
+        sys.exit(1)
+except Exception as exception:
+    print("\n" + CRED + "Exception. Error message:" + CEND + "\n")
+    print('Exception on line {}'.format(sys.exc_info()[-1].tb_lineno) + ' (' + type(exception).__name__ + ')')
+    print(exception)
+    print("\n" + CRED + "Exception. Exiting now." + CEND + "\n")
+    sys.exit(1)
 
 if not os.path.exists('/usr/bin/nmblookup'):
     inpInstallProg = input("\n" + CRED + "A program is missing." + CEND + " Shall it be installed automatically? (y/n) ")
@@ -82,6 +92,7 @@ if not os.path.exists('/usr/bin/nmblookup'):
         os.execv(sys.executable, ['python3.6'] + sys.argv)
     else:
         print("\n" + CRED + "Program missing. Exiting now." + CEND + "\n")
+        sys.exit(1)
 
 parser = OptionParser(usage="%prog [OPTIONS]", version="%prog 1.0")
 
@@ -913,7 +924,11 @@ def sendMail(subject):
         server.sendmail(emailfrom, emailto, msg.as_string())
         server.quit()
         print('Email got sent. Subject: ' + subject + '\n')
-    except:
+    except Exception as exception:
+        ###
+        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno) + ' (' + type(exception).__name__ + ')')
+        print(exception)
+        ###
         print(CRED + 'Check the mail credentials. Something is wrong here >> credentials.json\n' + CEND)
         inpOne = input("Do you wanna edit the credentials for sending mail? (y/n) ").lower()
         if inpOne in ('y', 'yes'):
