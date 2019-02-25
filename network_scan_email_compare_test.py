@@ -815,8 +815,6 @@ def generateListHTML():
 		data_all = json.load(json_file)
 		data_all_sorted = sorted([*data_all.keys()], key=lambda x: (data_all[x]['SEEN'], data_all[x]['IPv4loc']), reverse=True)
 
-		### Scan only if online
-
 		for i, item in enumerate(data_all_sorted):
 			key = item
 			progbar(i, z, 20)
@@ -892,7 +890,6 @@ def generateListHTML():
 				else:
 					dataListHTML.append('</tr>')
 
-
 			else:
 				dataListHTML.append('<tr><td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
 				dataListHTML.append('<tr><td>IPv4 local: ' + key_IPv4loc + '<br>')
@@ -929,7 +926,7 @@ def generateListHTML():
 
 # Send mail if -e flag is being used
 def sendMail(subject):
-	secret_key = "{: <32}".format(stdoutdataMAChasa).encode("utf-8")
+	secret_key = stdoutdataMAChasa.ljust(32)[:32].encode("utf-8")
 	cipher = AES.new(secret_key,AES.MODE_ECB)
 	try:
 		with open('credentials.json') as cred_file:
