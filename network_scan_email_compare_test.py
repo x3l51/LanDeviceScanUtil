@@ -845,7 +845,7 @@ def generateListHTML():
 						<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
 						+ key_NAME_raw + '" height="10" width="10"></a>')
 				else:
-					stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 20 -Pn " + key_IPv4loc + " | grep open | cut -d/ -f1").splitlines()
+					stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 10 -F -Pn " + key_IPv4loc + " | grep open | cut -d/ -f1").splitlines()
 					for item in stdoutdataServicesPorts:
 						stdoutdataForbidden = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"403 Forbidden\"")
 						stdoutdataUnavailable = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"503 Service Unavailable\"")
