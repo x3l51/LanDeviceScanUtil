@@ -29,7 +29,7 @@ else:
 # Check what version of Python is used and if the right one is not installed
 # a prompt will ask if it should be automatically installed
 if float(sys.version[:3]) < 3.6:
-	if subprocess.getoutput("python3.6 --version | grep 3 | cut -d \' \' -f2").startswith(('3.6'), 0)
+	if subprocess.getoutput("python3.6 --version | grep 3 | cut -d \' \' -f2").startswith(('3.6'), 0):
 		print(CRED + "\nRestart the script using at least python3.6: 'sudo python3.6 network_scan_email_compare.py'\n" + CEND)
 	else:
 		inpInstallPy = input("\n" + CRED + "Python 3.6.* not installed." + CEND + " Shall it be installed automatically? (y/n) ")
@@ -288,6 +288,7 @@ if response == 0:
 	if stdoutdataMAC == '00:00:00:00:00:00' and stdoutdataMAC_lt != '':
 		stdoutdataMAC = stdoutdataMAC_lt
 	stdoutdataMACDiff = stdoutdataMAC[:8].replace(":","-")
+	stdoutdataMAChasa = subprocess.getoutput("cat /sys/class/net/*/address | awk '{print $1}'").upper().replace('\n',':')
 
 	try:
 		if os.path.exists('/var/lib/ieee-data/oui.txt') and os.path.getsize('/var/lib/ieee-data/oui.txt') != 0:
@@ -928,7 +929,7 @@ def generateListHTML():
 
 # Send mail if -e flag is being used
 def sendMail(subject):
-	secret_key = "{: <32}".format(stdoutdataMAC).encode("utf-8")
+	secret_key = "{: <32}".format(stdoutdataMAChasa).encode("utf-8")
 	cipher = AES.new(secret_key,AES.MODE_ECB)
 	try:
 		with open('credentials.json') as cred_file:
