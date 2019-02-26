@@ -6,6 +6,7 @@
 import sys
 import os
 import platform
+import subprocess
 
 # Definition of colours for terminal output
 CRED = '\033[91m'
@@ -46,7 +47,6 @@ if float(sys.version[:3]) < 3.6:
 # Import of the standard modules
 import time
 import datetime
-import subprocess
 import smtplib
 import mimetypes
 import email
@@ -146,7 +146,7 @@ parser.add_option("-w", "--website", action="store_true", default=False,
 parser.add_option("-d", "--diagram", action="store_true", default=False, 
 				help="Generate diagrams for every device for the website")
 
-parser.add_option("-e", "--email",  action="store_true", default=False,
+parser.add_option("-e", "--email", action="store_true", default=False,
 				help="Send email if unknown device is detected \
 				Use with `-e` to send mail if unknown device detected \
 				Use with `-e SUBJECT GOES HERE` to send an email anyway \
@@ -159,15 +159,33 @@ if options.website:
 	websitePath = ""
 	z = len(args)
 	for i in range(0,z):
-		if (args[i]).startswith(('/', './', '../'), 0):
-			if not os.path.exists(args[i]) or not os.path.isdir(args[i]):
-				print('\n' + CRED + 'The path "' + args[i] + '" doesn\'t seem to exist.' + CEND + '\n')
-			else:
-				websitePath = (args[i])
+		if not os.path.exists(args[i]) or not os.path.isdir(args[i]):
+			print('\n' + CRED + 'The path "' + args[i] + '" doesn\'t seem to exist.' + CEND + '\n')
+		else:
+			websitePath = (args[i])
+			if opSys == 'Linux':
 				if not websitePath.endswith('/'):
 					websitePath = websitePath + '/'
-			del args[i]
-			break
+		del args[i]
+		break
+
+if options.diagram:
+	diagramPath = ""
+	z = len(args)
+	for i in range(0,z):
+		if not os.path.exists(args[i]):
+			print('\n' + CRED + 'The path "' + args[i] + '" doesn\'t seem to exist.' + CEND + '\n')
+		else:
+			diagramPath = (args[i])
+			if opSys == 'Linux':
+				if not diagramPath.endswith('/'):
+					diagramPath = diagramPath + '/'
+		del args[i]
+		break
+
+if options.website and options.diagram:
+	if websitePath and diagramPath and websitePath != diagramPath:
+		print('\n' + CRED + 'The defined paths ' + websitePath + ' and ' + diagramPath + ' are not the same.' + CEND + '\n')
 
 argsParsed = ' '.join(args)
 
@@ -261,7 +279,7 @@ if response == 0:
 	stdoutdataIP6pub_lt_cut = subprocess.getoutput("ifconfig | grep \"inet6 \" | grep -v \"^[fe]\" | grep -v :: | awk 'NR==2{print$2}' | cut -d: -f5,6,7,8")
 	if stdoutdataIP6pub_lt is "":
 		stdoutdataIP6pub = stdoutdataIP6pub_lo
-		stdoutdataIP6pub_lt =  "n/a"
+		stdoutdataIP6pub_lt = "n/a"
 	else:
 		stdoutdataIP6pub = (stdoutdataIP6pub_lo + " (:" + stdoutdataIP6pub_lt_cut + ")")
 
@@ -451,7 +469,7 @@ if response == 0:
 		if os.path.getsize('network_scan_open_ports.txt') == 0:
 			line = 'n/a'
 			dataListHTML.append("%s<br>\n" % line)
-		else:    
+		else:
 			for line in portFileHTML:
 				dataListHTML.append("%s<br>\n" % line)
 		dataListHTML.append('</div></td></tr></table></td>')
@@ -478,7 +496,7 @@ def func():
 				if data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4 and data_all[stdoutdataMAC]["IPv6pub"] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
 					subject = "Public IPs have changed"
 					sendMail(subject)
-				elif stdoutdataIP6pub ==  "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
+				elif stdoutdataIP6pub == "n/a" and data_all[stdoutdataMAC]["IPv4pub"] != public_ipv4:
 					subject = "Public IPv4 has changed"
 					sendMail(subject)
 				elif data_all[stdoutdataMAC]["IPv6pub"] not in (stdoutdataIP6pub_lo, stdoutdataIP6pub_lt):
@@ -669,7 +687,7 @@ def func():
 		sys.stdout.write("\033[F")
 		sys.stdout.write("\033[K")
 
-	print("Elapsed time: " + time.strftime('%M:%S', time.localtime(time.time() - unixtime)) + " min\n")
+	print("Elapsed time for network scan: " + str(time.strftime('%M:%S', time.localtime(time.time() - unixtime))) + " min\n")
 
 # Log timestamps of every device online to main statistics file
 # This file will grow in size MASSIVELY
@@ -781,6 +799,9 @@ def generateDiagram():
 				plt.tight_layout()
 				plt.savefig("./log/" + key + "_1_month.png", dpi=300)
 				plt.close()
+				
+	if diagramPath:
+		subprocess.call("cd ./ && sudo cp -l -r log/ " + diagramPath + " > {}".format(os.devnull), shell=True)
 
 # Generate human readable list of all devices
 def generateListAll():
@@ -911,7 +932,7 @@ def generateListHTML():
 			readableList.write("%s\n" % item)
 
 	if websitePath:
-		subprocess.call("cd ./ && sudo cp network_scan_all.html " + websitePath + "index.html && sudo cp -r log/ " + websitePath + " > {}".format(os.devnull), shell=True)
+		subprocess.call("cd ./ && sudo cp -l network_scan_all.html " + websitePath + "index.html > {}".format(os.devnull), shell=True)
 
 # Send mail if -e flag is being used
 def sendMail(subject):
@@ -1068,7 +1089,7 @@ def sendMail(subject):
 if options.email and argsParsed:
 	subject = argsParsed
 	sendMail(subject)
-	print("Elapsed time: " + time.strftime('%M:%S', time.localtime(time.time() - unixtime)) + " min\n")
+	print("Elapsed time for network scan: " + str(time.strftime('%M:%S', time.localtime(time.time() - unixtime))) + " min\n")
 	sys.exit(0)
 
 func()
