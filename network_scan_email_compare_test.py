@@ -655,6 +655,7 @@ def func():
 
 # Log timestamps of every device online to main statistics file
 # This file will grow in size MASSIVELY
+### BROKEN FILES
 def generateDiagramStatistic(): 
 	if not os.path.exists('./log/statistic.json') or os.path.getsize('./log/statistic.json') == 0:
 		if not os.path.exists('./log'):
@@ -832,48 +833,77 @@ def generateListHTML():
 			sys.stdout.write("\033[K")
 
 			if key_LAST_SEEN == timeNow:
-				stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IPv4loc + " | cut -d/ -f3")
-				stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-				if stdoutdataServices == 'text/html':
-					key_IPv4loc_url = ('"http://' + key_IPv4loc + '/"')
-					key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-						<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-						+ key_NAME_raw + '" height="10" width="10"></a>')
-				elif stdoutdataURL != key_IPv4loc:
-					stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IPv4loc)
-					key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + stdoutdataURL + '>' + key_NAME_raw + ' \
-						<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-						+ key_NAME_raw + '" height="10" width="10"></a>')
-				else:
-					stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 10 -F -Pn " + key_IPv4loc + " | grep open | cut -d/ -f1").splitlines()
-					for item in stdoutdataServicesPorts:
-						stdoutdataForbidden = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"403 Forbidden\"")
-						stdoutdataUnavailable = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"503 Service Unavailable\"")
-						if stdoutdataForbidden == '' and stdoutdataUnavailable == '':
-							stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-							stdoutdataServicesSSL = subprocess.getoutput("curl --connect-timeout 3 --max-time 3 --insecure -s --head " + key_IPv4loc + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-							stdoutdataStatus = subprocess.getoutput("curl --connect-timeout 5 --max-time 5 --insecure -s --head https://" + key_IPv4loc + " | grep \"501 Not Implemented\"")
-							if stdoutdataServices == 'text/html':
-								key_IPv4loc_url = ('"http://' + key_IPv4loc + ':' + item + '/"')
-								key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-								<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-								+ key_NAME_raw + '" height="10" width="10"></a>')
-								break
-							elif stdoutdataServicesSSL == 'text/html':
-								key_IPv4loc_url = ('"https://' + key_IPv4loc + ':' + item + '/"')
-								key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-								<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-								+ key_NAME_raw + '" height="10" width="10"></a>')
-								break
-							elif stdoutdataStatus == 'HTTP/1.1 501 Not Implemented':
-								key_IPv4loc_url = ('"https://' + key_IPv4loc + '/"')
-								key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-								<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-								+ key_NAME_raw + '" height="10" width="10"></a>')
-								break
-							else:
-								continue
-						continue
+				# stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IPv4loc + " | cut -d/ -f3")
+				# stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
+				# if stdoutdataServices == 'text/html':
+				# 	key_IPv4loc_url = ('"http://' + key_IPv4loc + '/"')
+				# 	key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
+				# 		<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+				# 		+ key_NAME_raw + '" height="10" width="10"></a>')
+				# elif stdoutdataURL != key_IPv4loc:
+				# 	stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IPv4loc)
+				# 	key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + stdoutdataURL + '>' + key_NAME_raw + ' \
+				# 		<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+				# 		+ key_NAME_raw + '" height="10" width="10"></a>')
+				# else:
+				# 	stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 10 -F -Pn " + key_IPv4loc + " | grep open | cut -d/ -f1").splitlines()
+				# 	for item in stdoutdataServicesPorts:
+				# 		stdoutdataForbidden = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"403 Forbidden\"")
+				# 		stdoutdataUnavailable = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"503 Service Unavailable\"")
+				# 		if stdoutdataForbidden == '' and stdoutdataUnavailable == '':
+				# 			stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
+				# 			stdoutdataServicesSSL = subprocess.getoutput("curl --connect-timeout 3 --max-time 3 --insecure -s --head " + key_IPv4loc + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
+				# 			stdoutdataStatus = subprocess.getoutput("curl --connect-timeout 5 --max-time 5 --insecure -s --head https://" + key_IPv4loc + " | grep \"501 Not Implemented\"")
+				# 			if stdoutdataServices == 'text/html':
+				# 				key_IPv4loc_url = ('"http://' + key_IPv4loc + ':' + item + '/"')
+				# 				key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
+				# 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+				# 				+ key_NAME_raw + '" height="10" width="10"></a>')
+				# 				break
+				# 			elif stdoutdataServicesSSL == 'text/html':
+				# 				key_IPv4loc_url = ('"https://' + key_IPv4loc + ':' + item + '/"')
+				# 				key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
+				# 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+				# 				+ key_NAME_raw + '" height="10" width="10"></a>')
+				# 				break
+				# 			elif stdoutdataStatus == 'HTTP/1.1 501 Not Implemented':
+				# 				key_IPv4loc_url = ('"https://' + key_IPv4loc + '/"')
+				# 				key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
+				# 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+				# 				+ key_NAME_raw + '" height="10" width="10"></a>')
+				# 				break
+				# 			else:
+				# 				continue
+				# 		continue
+
+				###
+				print("\n" + key_IPv4loc)
+				print("---------------------------")
+				try:
+					print("TRY")
+					URL = "http://" + key_IPv4loc
+					print(URL)
+					response = requests.get(URL, verify=False)
+					print(response)
+					if response.status_code == "200":
+						print("yes")
+				except:
+					print("EXCEPT")
+					URL = "https://" + key_IPv4loc
+					print(URL)
+					response = requests.get(URL, verify=False)
+					print(response)
+					if response.status_code == "200":
+						print("yes")
+				finally:
+					print("FINALLY")
+					if response.history:
+						response.status_code
+						response.url
+					else:
+						response.status_code
+						response.url
+				###
 
 				dataListHTML.append('<tr><td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
 				dataListHTML.append('<tr><td>IPv4 local: ' + key_IPv4loc + '<br>')
