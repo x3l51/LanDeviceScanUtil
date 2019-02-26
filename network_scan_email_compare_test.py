@@ -878,16 +878,24 @@ def generateListHTML():
 
 				###
 				try:
+					print("TRY1")
+					print(key_IPv4loc)
 					try:
+						print("TRY2")
 						key_IPv4loc_url = "http://" + key_IPv4loc
+						print(key_IPv4loc_url)
 						response = requests.get(URL, verify=False)
 					except:
+						print("EXCEPT1")
 						key_IPv4loc_url = "https://" + key_IPv4loc
+						print(key_IPv4loc_url)
 						response = requests.get(URL, verify=False)
 					key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
 				 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
 				 				+ key_NAME_raw + '" height="10" width="10"></a>')
+					print(key_NAME)
 				except:
+					print("EXCEPT2")
 					pass
 				###
 
