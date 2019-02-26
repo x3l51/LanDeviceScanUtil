@@ -877,32 +877,18 @@ def generateListHTML():
 				# 		continue
 
 				###
-				print("\n" + key_IPv4loc)
-				print("---------------------------")
 				try:
-					print("TRY")
-					URL = "http://" + key_IPv4loc
-					print(URL)
-					response = requests.get(URL, verify=False)
-					print(response)
-					if response.status_code == "200":
-						print("yes")
+					try:
+						key_IPv4loc_url = "http://" + key_IPv4loc
+						response = requests.get(URL, verify=False)
+					except:
+						key_IPv4loc_url = "https://" + key_IPv4loc
+						response = requests.get(URL, verify=False)
+					key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
+				 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
+				 				+ key_NAME_raw + '" height="10" width="10"></a>')
 				except:
-					print("EXCEPT")
-					URL = "https://" + key_IPv4loc
-					print(URL)
-					response = requests.get(URL, verify=False)
-					print(response)
-					if response.status_code == "200":
-						print("yes")
-				finally:
-					print("FINALLY")
-					if response.history:
-						response.status_code
-						response.url
-					else:
-						response.status_code
-						response.url
+					pass
 				###
 
 				dataListHTML.append('<tr><td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
