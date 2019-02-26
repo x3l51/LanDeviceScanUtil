@@ -125,6 +125,10 @@ if not os.path.exists('/usr/bin/nmblookup'):
 		print("\n" + CRED + "Program missing. Exiting now." + CEND + "\n")
 		sys.exit(1)
 
+# This is needed to surpress warnings when looging up
+# status codes of local SSL secured URLs
+requests.packages.urllib3.disable_warnings()
+
 # Parser for the options you can start the script with
 parser = OptionParser(usage="%prog [OPTIONS]", version="%prog 1.0")
 
@@ -152,7 +156,6 @@ parser.add_option("-e", "--email",  action="store_true", default=False,
 (options, args) = parser.parse_args()
 
 if options.website:
-	options.diagram = True
 	websitePath = ""
 	z = len(args)
 	for i in range(0,z):
@@ -524,7 +527,7 @@ def func():
 					stdoutdataArpName = subprocess.getoutput("arp " + IPv4loc_get + " | grep -v Address | awk '{print$1}'")
 					NAME_get = stdoutdataArpName
 			except:
-				nmbName = subprocess.getoutput("nmblookup -A " + IPv4loc_get + " | grep -v \"<GROUP>\" | grep -v \"Looking\" | awk 'NR==1{print $1}'")
+				nmbName = subprocess.getoutput("timeout 2 nmblookup -A " + IPv4loc_get + " | grep -v \"<GROUP>\" | grep -v \"Looking\" | awk 'NR==1{print $1}'")
 				stdoutdataArpName = subprocess.getoutput("arp " + IPv4loc_get + " | grep -v Address | awk '{print$1}'")
 				if MAC_get == stdoutdataMAC:
 					NAME_get = (stdoutdataName)
@@ -642,16 +645,31 @@ def func():
 			subject = "Unknown device detected"
 			sendMail(subject)
 
+	print("Generating human readable file. This can take a moment.")
 	generateListAll()
+	sys.stdout.write("\033[F")
+	sys.stdout.write("\033[K")
+
+	print("Generating diagram statistics. This can take a moment.")
 	generateDiagramStatistic()
+	sys.stdout.write("\033[F")
+	sys.stdout.write("\033[K")
 	
 	# If the -d flag is being used, this is true
 	# It also is true by default if -w is being used
 	if options.diagram:
+		print("Generating diagrams. This can take a moment.")
 		generateDiagram()
+		sys.stdout.write("\033[F")
+		sys.stdout.write("\033[K")
 	# If the -w flag is being used, this is true
 	if options.website:
+		print("Generating HTML file. This can take a moment.")
 		generateListHTML()
+		sys.stdout.write("\033[F")
+		sys.stdout.write("\033[K")
+
+	print("Elapsed time: " + time.strftime('%M:%S', time.localtime(time.time() - unixtime)) + " min\n")
 
 # Log timestamps of every device online to main statistics file
 # This file will grow in size MASSIVELY
@@ -833,71 +851,18 @@ def generateListHTML():
 			sys.stdout.write("\033[K")
 
 			if key_LAST_SEEN == timeNow:
-				# stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IPv4loc + " | cut -d/ -f3")
-				# stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-				# if stdoutdataServices == 'text/html':
-				# 	key_IPv4loc_url = ('"http://' + key_IPv4loc + '/"')
-				# 	key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-				# 		<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-				# 		+ key_NAME_raw + '" height="10" width="10"></a>')
-				# elif stdoutdataURL != key_IPv4loc:
-				# 	stdoutdataURL = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -Ls -o /dev/null -w %{url_effective} " + key_IPv4loc)
-				# 	key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + stdoutdataURL + '>' + key_NAME_raw + ' \
-				# 		<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-				# 		+ key_NAME_raw + '" height="10" width="10"></a>')
-				# else:
-				# 	stdoutdataServicesPorts = subprocess.getoutput("sudo nmap --host-timeout 10 -F -Pn " + key_IPv4loc + " | grep open | cut -d/ -f1").splitlines()
-				# 	for item in stdoutdataServicesPorts:
-				# 		stdoutdataForbidden = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"403 Forbidden\"")
-				# 		stdoutdataUnavailable = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"503 Service Unavailable\"")
-				# 		if stdoutdataForbidden == '' and stdoutdataUnavailable == '':
-				# 			stdoutdataServices = subprocess.getoutput("curl --connect-timeout 1 --max-time 2 -s --head " + key_IPv4loc + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-				# 			stdoutdataServicesSSL = subprocess.getoutput("curl --connect-timeout 3 --max-time 3 --insecure -s --head " + key_IPv4loc + ":" + item + " | grep \"text/html\" | awk '{print $2}' | cut -d\; -f1")
-				# 			stdoutdataStatus = subprocess.getoutput("curl --connect-timeout 5 --max-time 5 --insecure -s --head https://" + key_IPv4loc + " | grep \"501 Not Implemented\"")
-				# 			if stdoutdataServices == 'text/html':
-				# 				key_IPv4loc_url = ('"http://' + key_IPv4loc + ':' + item + '/"')
-				# 				key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-				# 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-				# 				+ key_NAME_raw + '" height="10" width="10"></a>')
-				# 				break
-				# 			elif stdoutdataServicesSSL == 'text/html':
-				# 				key_IPv4loc_url = ('"https://' + key_IPv4loc + ':' + item + '/"')
-				# 				key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-				# 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-				# 				+ key_NAME_raw + '" height="10" width="10"></a>')
-				# 				break
-				# 			elif stdoutdataStatus == 'HTTP/1.1 501 Not Implemented':
-				# 				key_IPv4loc_url = ('"https://' + key_IPv4loc + '/"')
-				# 				key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
-				# 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
-				# 				+ key_NAME_raw + '" height="10" width="10"></a>')
-				# 				break
-				# 			else:
-				# 				continue
-				# 		continue
-
-				###
 				try:
-					print("TRY1")
-					print(key_IPv4loc)
 					try:
-						print("TRY2")
 						key_IPv4loc_url = "http://" + key_IPv4loc
-						print(key_IPv4loc_url)
-						response = requests.get(URL, verify=False)
+						response = requests.get(key_IPv4loc_url, verify=False, timeout=7)
 					except:
-						print("EXCEPT1")
 						key_IPv4loc_url = "https://" + key_IPv4loc
-						print(key_IPv4loc_url)
-						response = requests.get(URL, verify=False)
-					key_NAME = ('<a target="_blank" rel="noopener noreferrer" href=' + key_IPv4loc_url + '>' + key_NAME_raw + ' \
+						response = requests.get(key_IPv4loc_url, verify=False, timeout=7)
+					key_NAME = ('<a target="_blank" rel="noopener noreferrer" href="' + key_IPv4loc_url + '">' + key_NAME_raw + ' \
 				 				<img src="https://wiki.selfhtml.org/images/7/7e/Link_icon_black.svg" alt="' \
 				 				+ key_NAME_raw + '" height="10" width="10"></a>')
-					print(key_NAME)
 				except:
-					print("EXCEPT2")
 					pass
-				###
 
 				dataListHTML.append('<tr><td><table><tr><tr><th>Name: ' + key_NAME + '</th></tr></tr>')
 				dataListHTML.append('<tr><td>IPv4 local: ' + key_IPv4loc + '<br>')
@@ -1103,8 +1068,7 @@ def sendMail(subject):
 if options.email and argsParsed:
 	subject = argsParsed
 	sendMail(subject)
+	print("Elapsed time: " + time.strftime('%M:%S', time.localtime(time.time() - unixtime)) + " min\n")
 	sys.exit(0)
 
-generateListHTML()
-sys.exit(0)
 func()
