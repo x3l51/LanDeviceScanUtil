@@ -1105,4 +1105,6 @@ if options.email and argsParsed:
 	sendMail(subject)
 	sys.exit(0)
 
+generateListHTML()
+sys.exit(0)
 func()
